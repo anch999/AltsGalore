@@ -1,0 +1,12 @@
+## Interface: 30300
+## Title: AltsGalore
+## Notes: Custom spell and item menu for Ascension
+## Author: Anch (Area-52)
+## SavedVariables: AltsGaloreDB
+## SavedVariablesPerCharacter: AltsGaloreCharDB
+## X-Category: UnitFrame
+## X-OptionsFrame: AltsGaloreOptionsFrame
+## DefaultState: enabled
+## Version: 1.0.0
+
+embeds.xml
