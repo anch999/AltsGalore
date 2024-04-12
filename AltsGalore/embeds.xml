@@ -24,4 +24,5 @@
 <Script file="AltsGaloreUI.lua"/>
 <Script file="Minimap.lua"/>
 <Script file="Utils.lua"/>
+<Script file="Containers.lua"/>
 </Ui>

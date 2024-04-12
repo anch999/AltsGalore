@@ -1,0 +1,6 @@
+﻿## Interface: 30300
+## Title: AltsGalorePersonalBanks
+## Notes: Bag and bank data for AltsGalore
+## Dependencies: AltsGalore
+## LoadOnDemand: 0
+## SavedVariables: AltsGalorePersonalBanksDB

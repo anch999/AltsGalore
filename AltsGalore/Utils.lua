@@ -1,6 +1,11 @@
 local AG = LibStub("AceAddon-3.0"):GetAddon("AltsGalore")
 local CYAN =  "|cff00ffff"
 local WHITE = "|cffFFFFFF"
+local LIMEGREEN = "|cFF32CD32"
+local ORANGE= "|cFFFFA500"
+local AQUA  = "|cFF00FFFF"
+local GREEN  = "|cff00ff00"
+
 
 local cTip = CreateFrame("GameTooltip","cTooltip",nil,"GameTooltipTemplate")
 
@@ -112,3 +117,94 @@ function AG:OnEnter(button, show)
         GameTooltip:Show()
     end
 end
+
+function AG:GetItemIdFromLink(link)
+    if not link then return end
+    return tonumber(select(3, strfind(link , "^|%x+|Hitem:(%-?%d+).*")))
+end
+
+local function TooltipHandlerItem(tooltip)
+	local link = select(2, tooltip:GetItem())
+	if not link then return end
+	local itemID = GetItemInfoFromHyperlink(link)
+	if not itemID then return end
+    local charList = {}
+    for name, bags in pairs(AG.containersDB) do
+        if not charList[name] then charList[name] = {} end
+        for i, bag in pairs(bags) do
+            if (i >= 1) and (i <= 5) then
+                for _, slot in pairs(bag) do
+                    if slot[1] == itemID then
+                        charList[name].Bags = charList[name].Bags and charList[name].Bags + slot[2] or slot[2]
+                    end
+                end
+            else
+                for _, slot in pairs(bag) do
+                    if slot[1] == itemID then
+                        charList[name].Bank = charList[name].Bank and charList[name].Bank + slot[2] or slot[2]
+                    end
+                end
+            end
+        end
+    end
+    for name, bags in pairs(AG.personalBanksDB) do
+        for _, bag in pairs(bags) do
+            for _, slot in pairs(bag) do
+                if slot[1] == itemID then
+                    charList[name].PersonalBank = charList[name].PersonalBank and charList[name].PersonalBank + slot[2] or slot[2]
+                end
+            end
+        end
+    end
+    GameTooltip:AddLine(" ")
+    for name, char in pairs(charList) do
+        local cList = ""
+        local total = 0
+        if char.Bags then
+            total = total + char.Bags
+            cList =  WHITE.."(Bags: "..GREEN..char.Bags..WHITE..") "
+        end
+        if char.Bank then
+            total = total + char.Bank
+            cList =  cList..WHITE.."(Bank: "..GREEN..char.Bank..WHITE..") "
+        end
+        if char.PersonalBank then
+            total = total + char.PersonalBank
+            cList =  cList..WHITE.."(PersonalBank: "..GREEN..char.PersonalBank..WHITE..")"
+        end
+        if total ~= 0 then
+            total = ORANGE..total.." "
+            GameTooltip:AddDoubleLine(CYAN..name, total..cList)
+        end
+    end
+
+    local realmBank
+    for _, bag in pairs(AG.realmBanksDB.RealmBank) do
+        for _, slot in pairs(bag) do
+            if slot[1] == itemID then
+                realmBank = realmBank and realmBank + slot[2] or slot[2]
+            end
+        end
+    end
+    if realmBank then
+        GameTooltip:AddDoubleLine(GREEN.."Realm Bank", WHITE.."(Realm Bank: "..GREEN..realmBank..WHITE..")")
+    end
+
+    local guildBank
+    for name, bags in pairs(AG.guildBanksDB) do
+        guildBank = nil
+        for _, bag in pairs(bags) do
+            for _, slot in pairs(bag) do
+                if slot[1] == itemID then
+                    guildBank = guildBank and guildBank + slot[2] or slot[2]
+                end
+            end
+        end
+        if guildBank then
+            GameTooltip:AddDoubleLine(ORANGE..name, WHITE.."(Guild Bank: "..GREEN..guildBank..WHITE..")")
+        end
+    end
+
+end
+
+GameTooltip:HookScript("OnTooltipSetItem", TooltipHandlerItem)

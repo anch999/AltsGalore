@@ -4,6 +4,7 @@
 ## Author: Anch (Area-52)
 ## SavedVariables: AltsGaloreDB
 ## SavedVariablesPerCharacter: AltsGaloreCharDB
+## Dependencies: AltsGaloreContainers, AltsGaloreGuildBanks, AltsGalorePersonalBanks, AltsGaloreRealmBanks
 ## X-Category: UnitFrame
 ## X-OptionsFrame: AltsGaloreOptionsFrame
 ## DefaultState: enabled

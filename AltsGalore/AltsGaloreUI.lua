@@ -19,7 +19,6 @@ function AG:CreateUI()
         self.uiFrame:SetScript("OnShow", function() self:UiOnShow() end)
         self.uiFrame:SetScript("OnMouseDown", function()
             AG.dewdrop:Close()
-            --AGDefaultFrameSearchBox:ClearFocus()
         end)
         self.uiFrame:SetScript("OnHide", function() AG.dewdrop:Close() end)
         self.uiFrame:SetScript("OnDragStart", function()
@@ -28,6 +27,16 @@ function AG:CreateUI()
         self.uiFrame:SetScript("OnDragStop", function()
             self.uiFrame:StopMovingOrSizing()
          end)
+
+    --Character Select Button
+        self.uiFrame.characterSelect = CreateFrame("Button", "AltsGaloreCharacterSelect", self.uiFrame, "AltsGaloreDropMenuTemplate")
+        self.uiFrame.characterSelect:SetSize(275,25)
+        self.uiFrame.characterSelect:SetPoint("TOPLEFT", self.uiFrame,60,-60)
+        self.uiFrame.characterSelect.Lable:SetText("Select Character")
+
+        self.uiFrame.characterSelect:SetScript("OnClick", function(button)
+            AG:DewdropRegister(button)
+        end)
 
         self.uiFrame.tabList = {}
          -------------------First Tab Frame-------------------
@@ -46,7 +55,7 @@ function AG:CreateUI()
         self.uiFrame.bagsTab.tabButton:SetPoint("LEFT", self.uiFrame.summaryTab.tabButton, "RIGHT", 10, 0)
         self.uiFrame.bagsTab.tabButton:SetWidth(125)
         self.uiFrame.bagsTab.tabButton.Text:SetText("Bags")
-        self.uiFrame.bagsTab.tabButton.Icon:SetIcon("Interface\\Icons\\INV_Misc_Bag_08")
+        self.uiFrame.bagsTab.tabButton.Icon:SetIcon("Interface\\Buttons\\Button-Backpack-Up")
         self.uiFrame.bagsTab.tabButton:SetScript("OnClick", function() self:SetFrameTab("AltsGaloreUiBagsTab") end)
         tinsert(self.uiFrame.tabList, "AltsGaloreUiBagsTab")
 
@@ -115,4 +124,38 @@ function AG:SetFrameTab(frame)
     _G[frame.."Button"]:SetChecked(true)
     _G[frame.."Button"]:UpdateButton()
     _G[frame]:Show()
+end
+
+--sets up the drop down menu for any menus
+function AG:DewdropRegister(button)
+    if self.dewdrop:IsOpen(button) then self.dewdrop:Close() return end
+    self.dewdrop:Register(button,
+        'point', function(parent)
+            return "TOP", "BOTTOM"
+        end,
+        'children', function(level, value)
+            for name, char in pairs(self.containersDB) do
+                self.dewdrop:AddLine(
+                    'text', name,
+                    'func', function() self.selectedCharacter = name end,
+                    'textHeight', self.db.txtSize,
+                    'textWidth', self.db.txtSize,
+                    'closeWhenClicked', true,
+                    'notCheckable', true
+                )
+            end
+            self:AddDividerLine(35)
+            self.dewdrop:AddLine(
+				'text', "|cFF00FFFFClose Menu",
+                'textHeight', self.db.txtSize,
+                'textWidth', self.db.txtSize,
+				'closeWhenClicked', true,
+				'notCheckable', true
+			)
+		end,
+		'dontHook', true
+	)
+    self.dewdrop:Open(button)
+
+    GameTooltip:Hide()
 end

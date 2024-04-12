@@ -14,9 +14,7 @@ local DefaultSettings  = {
     txtSize         = 12,
 }
 
-local CharDefaultSettings = {
-
-}
+local CharDefaultSettings = { }
 
 --[[ DB = Name of the db you want to setup
 CheckBox = Global name of the checkbox if it has one and first numbered table entry is the boolean
@@ -48,14 +46,48 @@ end
 function AG:OnEnable()
     self:InitializeMinimap()
     self:SetFrameTab("AltsGaloreUiSummaryTab")
+    self.realm = GetRealmName()
+    self.thisChar = GetUnitName("player")
+    self:RegisterEvent("GUILD_ROSTER_UPDATE")
+    self:RegisterEvent("GUILDBANKFRAME_OPENED")
+    self:RegisterEvent("GUILDBANKFRAME_CLOSED")
+    self:RegisterEvent("BANKFRAME_OPENED")
+    self:RegisterEvent("BANKFRAME_CLOSED")
+    self:RegisterEvent("BAG_UPDATE")
+    self:InitializeStorgeDBs()
     --self.standaloneButton:SetScale(self.db.buttonScale or 1)
 end
 
+function AG:GUILD_ROSTER_UPDATE()
+    self.guild = GetGuildInfo("player")
+    self:InitializeStorgeDBs()
+    self:UnregisterEvent("GUILD_ROSTER_UPDATE")
+end
+
+function AG:GUILDBANKFRAME_OPENED()
+    self:RegisterEvent("GUILDBANKBAGSLOTS_CHANGED")
+end
+
+function AG:GUILDBANKFRAME_CLOSED()
+    self:UnregisterEvent("GUILDBANKBAGSLOTS_CHANGED")
+end
+
+function AG:BANKFRAME_OPENED()
+    self.bankFrameOpen = true
+    AG:ScanContainer({6,12})
+end
+
+function AG:BANKFRAME_CLOSED()
+    self.bankFrameOpen = false
+end
+
 function AG:OnInitialize()
+
     AltsGaloreDB = AltsGaloreDB or {}
     AltsGaloreCharDB = AltsGaloreCharDB or {}
     self.db = AltsGaloreDB
     self.charDB = AltsGaloreCharDB
+
     setupSettings(self.db, DefaultSettings)
     setupSettings(self.charDB, CharDefaultSettings)
     --Enable the use of /AltsGalore slash command
@@ -64,6 +96,7 @@ function AG:OnInitialize()
     SlashCmdList["ALTSGALORE"] = function(msg)
         ALTSGALORE:SlashCommand(msg)
     end
+
 end
 
 --[[
