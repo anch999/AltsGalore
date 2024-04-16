@@ -57,6 +57,7 @@ function AG:OnEnable()
     self:RegisterEvent("BAG_UPDATE")
     self:InitializeStorgeDBs()
     self.selectedCharacter = self.thisChar
+    self.realBankSelected = "RealmBank"
     self.uiFrame.characterSelect:SetText(self.selectedCharacter)
     --self.standaloneButton:SetScale(self.db.buttonScale or 1)
 end
@@ -78,11 +79,13 @@ end
 
 function AG:BANKFRAME_OPENED()
     self.bankFrameOpen = true
-    AG:ScanContainer({6,12})
+    AG:ScanContainer({6,13})
+    self:RegisterEvent("PLAYERBANKSLOTS_CHANGED")
 end
 
 function AG:BANKFRAME_CLOSED()
     self.bankFrameOpen = false
+    self:UnregisterEvent("PLAYERBANKSLOTS_CHANGED")
 end
 
 function AG:OnInitialize()

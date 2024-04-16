@@ -191,7 +191,7 @@ local function TooltipHandlerItem(tooltip)
         end
         if personalBank[name] and personalBank[name].total then
             local tooltip
-            if IsShiftKeyDown() or AG.detailedGuildBankCount then
+            if IsShiftKeyDown() or AG.detailedGuildBankCount or AG.shiftKeyDown then
                 
                 for _, bag in pairs(personalBank[name]) do
                     if type(bag) == "table" then
@@ -227,7 +227,7 @@ local function TooltipHandlerItem(tooltip)
     end
     if realmBank and realmBank.total then
         local tooltip
-        if IsShiftKeyDown() or AG.detailedGuildBankCount then
+        if IsShiftKeyDown() or AG.detailedGuildBankCount or AG.shiftKeyDown then
             for _, v in pairs(realmBank) do
                 if type(v) == "table" then
                     local text = WHITE.."("..v.name..": "..GREEN..v.count..WHITE..") "
@@ -258,7 +258,7 @@ local function TooltipHandlerItem(tooltip)
         end
         if guildBank[name] and guildBank[name].total then
             local tooltip
-            if IsShiftKeyDown() or AG.detailedGuildBankCount then
+            if IsShiftKeyDown() or AG.detailedGuildBankCount or AG.shiftKeyDown then
                 for _, v in pairs(guildBank[name]) do
                     if type(v) == "table" then
                         local text = WHITE.."("..v.name..": "..GREEN..v.count..WHITE..")"

@@ -231,32 +231,23 @@ function AG:ContainersTabsCreate()
 	self.uiFrame.SelectionScrollFrame.lable:SetJustifyH("LEFT")
 	self.uiFrame.SelectionScrollFrame.lable:SetPoint("TOPLEFT", self.uiFrame.SelectionScrollFrame, 2, 15)
 
-    local function getChars(tab)
-        if not tab then return end
-        local container, selection, text
-        if self.selectedTab == "AltsGaloreUiContainersTab" then
-            container = self.containersDB
-            selection = "selectedCharacter"
-            text = "Character Selection"
-        elseif self.selectedTab == "AltsGaloreUiRealmBankTab" then
-            container = self.realmBanksDB
-            self.realBankSelected = "RealmBank"
-            selection = "realBankSelected"
-            text = "RealBank Selection"
-        elseif self.selectedTab == "AltsGaloreUiGuildBankTab" then
-            container = self.guildBanksDB
-            selection = "selectedGuild"
-            text = "Guild Selection"
-        end
+    local function getChars()
+        local containerSettings = {
+            AltsGaloreUiContainersTab = {self.containersDB, "selectedCharacter", "Character Selection"},
+            AltsGaloreUiRealmBankTab = {self.realmBanksDB, "realBankSelected", "RealBank Selection"},
+            AltsGaloreUiGuildBankTab = {self.guildBanksDB, "selectedGuild", "Guild Selection"},
+        }
+        local container = containerSettings[self.selectedTab]
+        if not container then return end
         local charList = {}
-        for char, _ in pairs (container) do
+        for char, _ in pairs (container[1]) do
             tinsert(charList, char)
         end
-        return charList, selection, text
+        return charList, container[2], container[3]
     end
 
 	function AG:SelectionScrollFrameUpdate()
-        local charList, selection, text = getChars(self.selectedTab)
+        local charList, selection, text = getChars()
         if not charList or not selection then return end
         self.uiFrame.SelectionScrollFrame.lable:SetText(text)
 		local maxValue = #charList
@@ -349,14 +340,19 @@ end
 
 ------------------ScrollFrameTooltips---------------------------
 	local function ItemTemplate_OnEnter(self)
+        AG.shiftKeyDown = false
 		if not self.itemLink then return end
+        if IsShiftKeyDown() then
+            AG.shiftKeyDown = true
+        end
 		GameTooltip:SetOwner(self, "ANCHOR_RIGHT", -13, -50)
 		GameTooltip:SetHyperlink(self.itemLink)
 		GameTooltip:Show()
 	end
 
 	local function ItemTemplate_OnLeave()
-		GameTooltip:Hide()
+		AG.shiftKeyDown = false
+        GameTooltip:Hide()
 	end
 
 	self.uiFrame.containerScrollFrame = CreateFrame("Frame", "AltsGaloreContainerScrollFrame", self.uiFrame.SelectionScrollFrame)

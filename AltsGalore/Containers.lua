@@ -23,29 +23,45 @@ end
 function AG:BAG_UPDATE(event, bagID)
     bagID = bagID + 1
 	if bagID < 0 then return end
-    if (bagID >= 6) and (bagID <= 12) and not self.bankFrameOpen then
+    if (bagID >= 6) and (bagID <= 13) and not self.bankFrameOpen then
 		return
 	end
     self:ScanContainer(bagID)
 end
 
+function AG:PLAYERBANKSLOTS_CHANGED()
+    self:ScanContainer({6,13})
+end
+
 function AG:ScanContainer(bagID)
-	local function bagInfo(bagID)
-        if bagID == 1 then	-- Bag 0	
+	local function bagInfo(bagID, storedBagID)
+        if storedBagID == 1 or storedBagID == 6 then	-- Bag 0	
             return "Interface\\Buttons\\Button-Backpack-Up"
         else				-- Bags 1 through 11
-            return GetInventoryItemTexture("player", ContainerIDToInventoryID(bagID-1)) , GetInventoryItemLink("player", ContainerIDToInventoryID(bagID-1))
+            return GetInventoryItemTexture("player", ContainerIDToInventoryID(bagID)) , GetInventoryItemLink("player", ContainerIDToInventoryID(bagID))
         end
     end
 	local function scanBag(bagID)
-        local icon, itemLink = bagInfo(bagID)
-        local numSlots = GetContainerNumSlots(bagID - 1)
-        self.containersDB[self.thisChar][bagID] = {icon = icon, itemLink = itemLink, numSlots = numSlots}
+        local storedBagID = bagID
+        if bagID == 13 then
+            bagID = -1
+            storedBagID = 6
+        elseif bagID >= 6 then
+            storedBagID = storedBagID + 1
+            bagID = bagID - 1
+        else
+            bagID = bagID - 1
+        end
+        local numSlots = GetContainerNumSlots(bagID)
+
+        if numSlots == 0 then return end
+        local icon, itemLink = bagInfo(bagID, storedBagID)
+        self.containersDB[self.thisChar][storedBagID] = {icon = icon, itemLink = itemLink, numSlots = numSlots}
         for slot = 1, numSlots do
-            local itemCount = select(2,GetContainerItemInfo(bagID - 1, slot))
-            local itemID = GetContainerItemID(bagID - 1, slot)
+            local itemCount = select(2,GetContainerItemInfo(bagID, slot))
+            local itemID = GetContainerItemID(bagID, slot)
             if itemID then
-                self.containersDB[self.thisChar][bagID][slot] = {itemID, itemCount}
+                self.containersDB[self.thisChar][storedBagID][slot] = {itemID, itemCount}
             end
         end
     end
@@ -60,6 +76,9 @@ function AG:ScanContainer(bagID)
         for bag = 1, 5 do
             scanBag(bag)
         end
+    end
+    if self.uiFrame.containerScrollFrame:IsVisible() then
+        self:SetScrollFrame()
     end
 end
 
@@ -90,5 +109,8 @@ function AG:GUILDBANKBAGSLOTS_CHANGED()
         if itemID then
             db[tab][slot] = {itemID, itemCount}
         end
+    end
+    if self.uiFrame.containerScrollFrame:IsVisible() then
+        self:SetScrollFrame()
     end
 end
