@@ -7,6 +7,14 @@ local AQUA  = "|cFF00FFFF"
 local GREEN  = "|cff00ff00"
 
 
+local function GetTipAnchor(frame)
+    local x, y = frame:GetCenter()
+    if not x or not y then return 'TOPLEFT', 'BOTTOMLEFT' end
+    local hhalf = (x > UIParent:GetWidth() * 2 / 3) and 'RIGHT' or (x < UIParent:GetWidth() / 3) and 'LEFT' or ''
+    local vhalf = (y > UIParent:GetHeight() / 2) and 'TOP' or 'BOTTOM'
+    return vhalf .. hhalf, frame, (vhalf == 'TOP' and 'BOTTOM' or 'TOP') .. hhalf
+end
+
 local cTip = CreateFrame("GameTooltip","cTooltip",nil,"GameTooltipTemplate")
 
 function AG:IsRealmbound(bag, slot)
@@ -124,39 +132,52 @@ function AG:GetItemIdFromLink(link)
 end
 
 local function TooltipHandlerItem(tooltip)
+    --checks for combat less likley to cause a lag spike
+    if UnitAffectingCombat("player") then return end
+    --get item link and itemID
 	local link = select(2, tooltip:GetItem())
 	if not link then return end
 	local itemID = GetItemInfoFromHyperlink(link)
 	if not itemID then return end
+    --create list of characters that have the item in there bag/bank to be shown on the items tooltip 
     local charList = {}
     for name, bags in pairs(AG.containersDB) do
         if not charList[name] then charList[name] = {} end
         for i, bag in pairs(bags) do
             if (i >= 1) and (i <= 5) then
                 for _, slot in pairs(bag) do
-                    if slot[1] == itemID then
+                    if type(slot) == "table" and slot[1] == itemID then
                         charList[name].Bags = charList[name].Bags and charList[name].Bags + slot[2] or slot[2]
                     end
                 end
             else
                 for _, slot in pairs(bag) do
-                    if slot[1] == itemID then
+                    if type(slot) == "table" and slot[1] == itemID then
                         charList[name].Bank = charList[name].Bank and charList[name].Bank + slot[2] or slot[2]
                     end
                 end
             end
         end
     end
+    --add characters personal bank to list if it has the item
+    local personalBank = {}
     for name, bags in pairs(AG.personalBanksDB) do
-        for _, bag in pairs(bags) do
+        personalBank[name] = personalBank[name] or {}
+        for i, bag in pairs(bags) do
             for _, slot in pairs(bag) do
-                if slot[1] == itemID then
-                    charList[name].PersonalBank = charList[name].PersonalBank and charList[name].PersonalBank + slot[2] or slot[2]
+                if type(slot) == "table" and slot[1] == itemID then
+                    personalBank[name][i] = personalBank[name][i] or {name = bag.name}
+                    personalBank[name][i].count = personalBank[name][i].count and personalBank[name][i].count + slot[2] or slot[2]
                 end
             end
+            if personalBank[name][i] then
+                personalBank[name].total = personalBank[name].total and personalBank[name].total + personalBank[name][i].count or personalBank[name][i].count
+            end
+
         end
     end
     GameTooltip:AddLine(" ")
+    --creates the character tooltip from data thats just been processed
     for name, char in pairs(charList) do
         local cList = ""
         local total = 0
@@ -168,43 +189,99 @@ local function TooltipHandlerItem(tooltip)
             total = total + char.Bank
             cList =  cList..WHITE.."(Bank: "..GREEN..char.Bank..WHITE..") "
         end
-        if char.PersonalBank then
-            total = total + char.PersonalBank
-            cList =  cList..WHITE.."(PersonalBank: "..GREEN..char.PersonalBank..WHITE..")"
+        if personalBank[name] and personalBank[name].total then
+            local tooltip
+            if IsShiftKeyDown() or AG.detailedGuildBankCount then
+                
+                for _, bag in pairs(personalBank[name]) do
+                    if type(bag) == "table" then
+                        local text = WHITE.."("..bag.name..": "..GREEN..bag.count..WHITE..") "
+                        tooltip = tooltip and tooltip .. text or text
+                    end
+                end
+                cList = cList..tooltip
+            else
+                cList = cList..WHITE.."(Personal Bank: "..GREEN..personalBank[name].total..WHITE..") "
+            end
+            total = total + personalBank[name].total
         end
+            
         if total ~= 0 then
             total = ORANGE..total.." "
             GameTooltip:AddDoubleLine(CYAN..name, total..cList)
+
         end
     end
-
-    local realmBank
-    for _, bag in pairs(AG.realmBanksDB.RealmBank) do
+    --creates the realm bank data and tooltip
+    local realmBank = {}
+    for i, bag in pairs(AG.realmBanksDB.RealmBank) do
         for _, slot in pairs(bag) do
-            if slot[1] == itemID then
-                realmBank = realmBank and realmBank + slot[2] or slot[2]
+            if type(slot) == "table" and slot[1] == itemID then
+                realmBank[i] = realmBank[i] or {name = bag.name}
+                realmBank[i].count = realmBank[i].count and realmBank[i].count + slot[2] or slot[2]
             end
         end
+        if realmBank[i] then
+            realmBank.total = realmBank.total and realmBank.total + realmBank[i].count or realmBank[i].count
+        end
     end
-    if realmBank then
-        GameTooltip:AddDoubleLine(GREEN.."Realm Bank", WHITE.."(Realm Bank: "..GREEN..realmBank..WHITE..")")
-    end
-
-    local guildBank
-    for name, bags in pairs(AG.guildBanksDB) do
-        guildBank = nil
-        for _, bag in pairs(bags) do
-            for _, slot in pairs(bag) do
-                if slot[1] == itemID then
-                    guildBank = guildBank and guildBank + slot[2] or slot[2]
+    if realmBank and realmBank.total then
+        local tooltip
+        if IsShiftKeyDown() or AG.detailedGuildBankCount then
+            for _, v in pairs(realmBank) do
+                if type(v) == "table" then
+                    local text = WHITE.."("..v.name..": "..GREEN..v.count..WHITE..") "
+                    tooltip = tooltip and tooltip .. text or text
                 end
             end
+            tooltip = ORANGE..realmBank.total..tooltip
+        else
+            tooltip = WHITE.."(Realm Bank: "..GREEN..realmBank.total..WHITE..")"
         end
-        if guildBank then
-            GameTooltip:AddDoubleLine(ORANGE..name, WHITE.."(Guild Bank: "..GREEN..guildBank..WHITE..")")
+        GameTooltip:AddDoubleLine(GREEN.."Realm Bank", tooltip)
+    end
+    --creates the guild bank data and tooltip
+    local guildBank = {}
+    for name, bags in pairs(AG.guildBanksDB) do
+        guildBank[name] = {}
+        for i, bag in pairs(bags) do
+            for _, slot in pairs(bag) do
+                if type(slot) == "table" and slot[1] == itemID then
+                    guildBank[name][i] = guildBank[name][i] or {name = bag.name}
+                    guildBank[name][i].count = guildBank[name][i].count and guildBank[name][i].count + slot[2] or slot[2]
+                end
+            end
+            if guildBank[name][i] then
+                guildBank[name].total = guildBank[name].total and guildBank[name].total + guildBank[name][i].count or guildBank[name][i].count
+            end
+
+        end
+        if guildBank[name] and guildBank[name].total then
+            local tooltip
+            if IsShiftKeyDown() or AG.detailedGuildBankCount then
+                for _, v in pairs(guildBank[name]) do
+                    if type(v) == "table" then
+                        local text = WHITE.."("..v.name..": "..GREEN..v.count..WHITE..")"
+                        tooltip = tooltip and tooltip .. text or text
+                    end
+                end
+                tooltip = ORANGE..guildBank[name].total..tooltip
+            else
+                tooltip = WHITE.."(Guild Bank: "..GREEN..guildBank[name].total..WHITE..")"
+            end
+            GameTooltip:AddDoubleLine(ORANGE..name, tooltip)
         end
     end
 
 end
 
 GameTooltip:HookScript("OnTooltipSetItem", TooltipHandlerItem)
+
+function AG:SetTooltipText(button, text)
+    GameTooltip:SetOwner(button, 'ANCHOR_NONE')
+    GameTooltip:SetPoint(GetTipAnchor(button))
+    GameTooltip:ClearLines()
+    GameTooltip:AddLine(text)
+    GameTooltip:Show()
+end
+

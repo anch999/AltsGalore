@@ -19,7 +19,7 @@ end
 function AltsGalore_OpenOptions()
 	if InterfaceOptionsFrame:GetWidth() < 850 then InterfaceOptionsFrame:SetWidth(850) end
 	AltsGalore_DropDownInitialize()
-	AG:DeleteEntryScrollFrameUpdate()
+	--AG:ContainerScrollFrameUpdate()
 end
 
 --Creates the options frame and all its assets
@@ -146,7 +146,7 @@ function AG:CreateOptionsUI()
 	self.options.addButton.Lable:SetText("Add item/spell")
 	self.options.addButton:SetScript("OnClick", function()
 		self:AddItem()
-		self:DeleteEntryScrollFrameUpdate()
+		--self:ContainerScrollFrameUpdate()
 	end)
 	self.options.addButton:SetScript("OnEnter", function(button)
 		GameTooltip:SetOwner(button, "ANCHOR_TOPLEFT", 0, 20)

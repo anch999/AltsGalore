@@ -39,8 +39,9 @@ function AG:ScanContainer(bagID)
     end
 	local function scanBag(bagID)
         local icon, itemLink = bagInfo(bagID)
-        self.containersDB[self.thisChar][bagID] = {icon = icon, itemLink = itemLink}
-        for slot = 1, GetContainerNumSlots(bagID - 1) do
+        local numSlots = GetContainerNumSlots(bagID - 1)
+        self.containersDB[self.thisChar][bagID] = {icon = icon, itemLink = itemLink, numSlots = numSlots}
+        for slot = 1, numSlots do
             local itemCount = select(2,GetContainerItemInfo(bagID - 1, slot))
             local itemID = GetContainerItemID(bagID - 1, slot)
             if itemID then
@@ -81,7 +82,7 @@ function AG:GUILDBANKBAGSLOTS_CHANGED()
     if not tab then return end
     local name, icon = GetGuildBankTabInfo(tab)
     if db[tab] then table.wipe(db[tab]) end
-    db[tab] = {name = name, icon = icon}
+    db[tab] = {name = name, icon = icon, numSlots = MAX_GUILDBANK_SLOTS_PER_TAB}
 
     for slot = 1, MAX_GUILDBANK_SLOTS_PER_TAB do
         local itemID = self:GetItemIdFromLink(GetGuildBankItemLink(tab, slot))

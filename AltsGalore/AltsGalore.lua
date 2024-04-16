@@ -12,6 +12,7 @@ local DefaultSettings  = {
     --hideMenu        = { false, Frame = "AltsGaloreStandaloneButton", CheckBox = "AltsGaloreOptionsHideMenu"},
     minimap         = { false, CheckBox = "AltsGaloreOptionsHideMinimap"},
     txtSize         = 12,
+    detailedGuildBankCount = false,
 }
 
 local CharDefaultSettings = { }
@@ -55,11 +56,14 @@ function AG:OnEnable()
     self:RegisterEvent("BANKFRAME_CLOSED")
     self:RegisterEvent("BAG_UPDATE")
     self:InitializeStorgeDBs()
+    self.selectedCharacter = self.thisChar
+    self.uiFrame.characterSelect:SetText(self.selectedCharacter)
     --self.standaloneButton:SetScale(self.db.buttonScale or 1)
 end
 
 function AG:GUILD_ROSTER_UPDATE()
     self.guild = GetGuildInfo("player")
+    self.selectedGuild = self.guild
     self:InitializeStorgeDBs()
     self:UnregisterEvent("GUILD_ROSTER_UPDATE")
 end
