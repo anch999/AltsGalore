@@ -221,7 +221,7 @@ function AG:ContainersTabsCreate()
 
 	self.uiFrame.SelectionScrollFrame = CreateFrame("Frame", "AltsGaloreSelectionScrollFrame", AltsGaloreUiContainersTab)
 	self.uiFrame.SelectionScrollFrame:EnableMouse(true)
-	self.uiFrame.SelectionScrollFrame:SetPoint("TOPLEFT", 30, -80)
+	self.uiFrame.SelectionScrollFrame:SetPoint("BOTTOMLEFT", 16, 16)
 	self.uiFrame.SelectionScrollFrame:SetBackdrop({
 		bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background", tile = true, tileSize = 16,
 		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", edgeSize = 16,
