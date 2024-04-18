@@ -20,9 +20,11 @@
 <Script file="Libs\DewdropLib\Dewdrop-2.0\Dewdrop-2.0.lua"/>
 
 <Script file="AltsGalore.lua"/>
-<Script file="AltsGaloreOptions.lua"/>
-<Script file="AltsGaloreUI.lua"/>
+<Script file="Options.lua"/>
+<Script file="UI.lua"/>
 <Script file="Minimap.lua"/>
 <Script file="Utils.lua"/>
 <Script file="Containers.lua"/>
+<Script file="Tooltips.lua"/>
+<Script file="Search.lua"/>
 </Ui>

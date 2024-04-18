@@ -55,10 +55,17 @@ function AG:OnEnable()
     self:RegisterEvent("BANKFRAME_OPENED")
     self:RegisterEvent("BANKFRAME_CLOSED")
     self:RegisterEvent("BAG_UPDATE")
+    self:RegisterEvent("PLAYER_MONEY")
+    self:RegisterEvent("CURRENCY_DISPLAY_UPDATE")
     self:InitializeStorgeDBs()
     self.selectedCharacter = self.thisChar
     self.realBankSelected = "RealmBank"
+    if not self.db[self.realm] then self.db[self.realm] = {} end
+    if not self.db[self.realm][self.thisChar] then self.db[self.realm][self.thisChar] = {} end
+    self.charDB = self.db[self.realm][self.thisChar]
+    self.realmDB = self.db[self.realm]
     self.uiFrame.characterSelect:SetText(self.selectedCharacter)
+    AG:CURRENCY_DISPLAY_UPDATE()
     --self.standaloneButton:SetScale(self.db.buttonScale or 1)
 end
 
