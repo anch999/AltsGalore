@@ -143,14 +143,30 @@ function AG:CreateUI()
         self.uiFrame.searchTab.tabButton.Icon:Hide()
         self.uiFrame.searchTab.tabButton.IconAtlas = self.uiFrame.searchTab.tabButton:CreateTexture(nil, "ARTWORK")
         self.uiFrame.searchTab.tabButton.IconAtlas:SetPoint("LEFT", 10, 2)
-        self.uiFrame.searchTab.tabButton.IconAtlas:SetSize(16,16)
-        self.uiFrame.searchTab.tabButton.IconAtlas:SetAtlas("common-search-magnifyingglass")
+        self.uiFrame.searchTab.tabButton.IconAtlas:SetSize(20,20)
+        self.uiFrame.searchTab.tabButton.IconAtlas:SetAtlas("communities-icon-searchmagnifyingglass")
         self.uiFrame.searchTab.tabButton:SetScript("OnClick", function()
             self.selectedTab = "AltsGaloreUiSearchTab"
             self:SetFrameTab()
         end)
         tinsert(self.uiFrame.tabList, "AltsGaloreUiSearchTab")
-
+            --Search Edit Box
+        self.uiFrame.searchbox = CreateFrame("EditBox", "AltsGaloreUiSearchBox", self.uiFrame, "SearchBoxTemplate")
+        self.uiFrame.searchbox:SetSize(190,30)
+        self.uiFrame.searchbox:SetPoint("TOPLEFT", self.uiFrame, 75, -30)
+        self.uiFrame.searchbox:SetScript("OnEnterPressed", function(editBox)
+            self:FullSearch()
+            editBox:ClearFocus()
+        end)
+        self.uiFrame.searchbox:SetScript("OnTextChanged", function(editBox)
+            if editBox:HasFocus() then
+                SearchBoxTemplate_OnTextChanged(editBox)
+            end
+        end)
+        self.uiFrame.searchbox.clearButton:HookScript("OnClick", function()
+            wipe(self.SearchResults)
+            self:SearchScrollFrameUpdate()
+        end)
 end
 
 AG:CreateUI()

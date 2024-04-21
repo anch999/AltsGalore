@@ -199,6 +199,7 @@ function AG:ContainersTabsCreate()
 				row:SetScript("OnClick", function()
                     self[selection] = charList[value]
                     self.uiFrame.characterSelect:SetText(self[selection])
+                    self.selectedBag[self.selectedTab] = 1
                     self:UpdateTabButtons()
                     self:SetScrollFrame()
 					self:SelectionScrollFrameUpdate()
@@ -308,7 +309,6 @@ end
                 end
                 for num = 1, MAX_COLUMNS do
                     local button = self.uiFrame.containerScrollFrame.rows[i]["button"..num]
-
                     local function SetButton(button)
                         _G[button:GetName().."IconTexture"]:SetSize(ROW_HEIGHT,ROW_HEIGHT)
                         _G[button:GetName().."IconTexture"]:SetAllPoints(button)
@@ -360,14 +360,7 @@ end
 		for num = 1, MAX_COLUMNS do
             row["button"..num] = CreateFrame("Button", "$parentButton"..num, row , "ItemButtonTemplate")
             row["button"..num]:SetSize(ROW_HEIGHT, ROW_HEIGHT)
-            row["button"..num]:SetScript("OnShow", function(button)
-                if GameTooltip:GetOwner() == button:GetName() then
-                    self:ItemTemplate_OnEnter(button)
-                end
-            end)
-            row["button"..num]:SetScript("OnEnter", function(button)
-                self:ItemTemplate_OnEnter(button)
-            end)
+            row["button"..num]:SetScript("OnEnter", function(button) self:ItemTemplate_OnEnter(button) end)
             row["button"..num]:SetScript("OnLeave", self.ItemTemplate_OnLeave)
         end
 		rawset(t, i, row)
@@ -386,6 +379,7 @@ end
         insets = { left = 4, right = 4, top = 4, bottom = 4 },
     })
     self.uiFrame.tabSelectionFrame.buttons = {}
+
     for num = 1, 8 do
         self.uiFrame.tabSelectionFrame.buttons[num] = CreateFrame("CheckButton", "$parentButton"..num, self.uiFrame.tabSelectionFrame)
         local button = self.uiFrame.tabSelectionFrame.buttons[num]
@@ -396,11 +390,6 @@ end
         else
             button:SetPoint("TOP", self.uiFrame.tabSelectionFrame.buttons[num - 1],"BOTTOM", 0 ,-5)
         end
-        button:SetScript("OnClick", function(button)
-            self.selectedBag[self.selectedTab] = num
-            self:UpdateTabButtons()
-            self:SetScrollFrame()
-        end)
         button.icon = button:CreateTexture(nil, "ARTWORK")
         button.icon:SetSize(36,36)
         button.icon:SetPoint("LEFT", button,0,0)
@@ -439,7 +428,6 @@ end
     self.selectedBag = {}
 
     function AG:UpdateTabButtons()
-
         self.selectedBag[self.selectedTab] = self.selectedBag[self.selectedTab] or 1
         local containerInfo = self:SetContainerSelectionInfo(self.selectedTab)
         if not containerInfo then return end
@@ -447,15 +435,23 @@ end
             local button = self.uiFrame.tabSelectionFrame.buttons[i]
             button:Hide()
             button:SetChecked(false)
+            button:Enable()
             if containerInfo and containerInfo[i] then
                 button.icon:SetTexture(containerInfo[i].icon)
                 button.Text:SetText(containerInfo[i].name)
                 button.tooltipText = containerInfo[i].name
                 button:Show()
+                button.count = i
+                button:SetScript("OnClick", function()
+                    self.selectedBag[self.selectedTab] = button.count
+                    self:UpdateTabButtons()
+                    self:SetScrollFrame()
+                end)
+                if self.selectedBag[self.selectedTab] == i then
+                    button:SetChecked(true)
+                end
             end
-            if self.selectedBag[self.selectedTab] == i then
-                button:SetChecked(true)
-            end
+
         end
 
     end
