@@ -77,6 +77,7 @@ function AG:GUILD_ROSTER_UPDATE()
 end
 
 function AG:GUILDBANKFRAME_OPENED()
+    wipe(self.numTabs)
     self:RegisterEvent("GUILDBANKBAGSLOTS_CHANGED")
 end
 

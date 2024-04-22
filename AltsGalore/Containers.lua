@@ -33,6 +33,7 @@ function AG:PLAYERBANKSLOTS_CHANGED()
     self:ScanContainer({6,13})
 end
 
+-- Scans the id of the bag/bank tab it is sent
 function AG:ScanContainer(bagID)
 	local function bagInfo(bagID, storedBagID)
         if storedBagID == 1 or storedBagID == 6 then	-- Bag 0	
@@ -81,10 +82,21 @@ function AG:ScanContainer(bagID)
         self:SetScrollFrame()
     end
 end
+AG.numTabs = {}
 
+-- Used to reset the current numTabs if bank type changes
+local lastBankType
+local function lastBank(last)
+    if last ~= lastBankType then
+        wipe(AG.numTabs)
+        lastBankType = last
+    end
+end
 function AG:GUILDBANKBAGSLOTS_CHANGED()
     if not GuildBankFrame then return end
     local gBankType, containerType
+    
+    -- Set what db to save data to
     if GuildBankFrame.IsPersonalBank then
         gBankType = "personalBanksDB"
         containerType = self.thisChar
@@ -96,7 +108,8 @@ function AG:GUILDBANKBAGSLOTS_CHANGED()
         containerType = self.guild
     end
     local db = self[gBankType][containerType]
-    db.numTabs = db.numTabs or {}
+
+    -- updates the tabs saved data
     local function processTab(tab)
         if not tab then return end
         local name, icon = GetGuildBankTabInfo(tab)
@@ -111,11 +124,17 @@ function AG:GUILDBANKBAGSLOTS_CHANGED()
             end
         end
     end
+
     local tab = GetCurrentGuildBankTab()
-    db.numTabs[tab] = true
-    for i, _ in pairs(db.numTabs) do
+    
+    lastBank(gBankType)
+    self.numTabs[tab] = true
+    -- refresh tabs that have been loaded since bank was opened
+    for i, _ in pairs(self.numTabs) do
         processTab(i)
     end
+
+    -- Refresh container scroll frame if the window is open
     if self.uiFrame.containerScrollFrame:IsVisible() then
         self:SetScrollFrame()
     end
