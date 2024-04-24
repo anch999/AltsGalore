@@ -37,7 +37,7 @@ function AG:CreateUI()
             self:DewdropRegister(button)
         end)
         self.uiFrame.characterSelect:Hide()
-        self.selectedTab = "AltsGaloreUiSummaryTab"
+        self.selectedTab = "summaryTab"
         self.uiFrame.tabList = {}
          -------------------First Tab Frame-------------------
         self.uiFrame.summaryTab = CreateFrame("Frame", "AltsGaloreUiSummaryTab", self.uiFrame)
@@ -47,16 +47,19 @@ function AG:CreateUI()
         self.uiFrame.summaryTab.tabButton = CreateFrame("CheckButton", "AltsGaloreUiSummaryTabButton", self.uiFrame, "AltsGaloreTabTemplate")
         self.uiFrame.summaryTab.tabButton:SetPoint("BOTTOMLEFT", 5, -30)
         self.uiFrame.summaryTab.tabButton:SetWidth(125)
-        self.uiFrame.summaryTab.tabButton.Text:SetText("Account")
+        self.uiFrame.summaryTab.tabButton.Text:SetText("Summary")
         self.uiFrame.summaryTab.tabButton.Icon:SetIcon("Interface\\Icons\\INV_Scroll_09")
         self.uiFrame.summaryTab:SetScript("OnShow", function()
-            self.selectedTab = "AltsGaloreUiSummaryTab"
+            self.selectedTab = "summaryTab"
+            self:SetFrameTab()
+            self:SummarySelectionScrollFrameUpdate()
         end)
         self.uiFrame.summaryTab.tabButton:SetScript("OnClick", function()
-            self.selectedTab = "AltsGaloreUiSummaryTab"
+            self.selectedTab = "summaryTab"
             self:SetFrameTab()
+            self:SummarySelectionScrollFrameUpdate()
         end)
-        tinsert(self.uiFrame.tabList, "AltsGaloreUiSummaryTab")
+        tinsert(self.uiFrame.tabList, "summaryTab")
 
         -------------------Bags Tab Frame-------------------
         self.uiFrame.containersTab = CreateFrame("Frame", "AltsGaloreUiContainersTab", self.uiFrame)
@@ -64,7 +67,7 @@ function AG:CreateUI()
         self.uiFrame.containersTab:SetSize(self.uiFrame:GetWidth()-10,self.uiFrame:GetHeight()-10)
         self.uiFrame.containersTab:Hide()
         self.uiFrame.containersTab:SetScript("OnShow", function()
-            self.selectedTab = "AltsGaloreUiContainersTab"
+            self.selectedTab = "containersTab"
             self:UpdateTabButtons()
             self:SetScrollFrame()
         end)
@@ -74,12 +77,12 @@ function AG:CreateUI()
         self.uiFrame.containersTab.tabButton.Text:SetText("Containers")
         self.uiFrame.containersTab.tabButton.Icon:SetIcon("Interface\\Buttons\\Button-Backpack-Up")
         self.uiFrame.containersTab.tabButton:SetScript("OnClick", function()
-            self.selectedTab = "AltsGaloreUiContainersTab"
+            self.selectedTab = "containersTab"
             self:UpdateTabButtons()
             self:SetFrameTab()
             self:SetScrollFrame()
         end)
-        tinsert(self.uiFrame.tabList, "AltsGaloreUiContainersTab")
+        tinsert(self.uiFrame.tabList, "containersTab")
 
         -------------------Realm Bank Tab Frame-------------------
         self.uiFrame.realmBankTab = CreateFrame("Frame", "AltsGaloreUiRealmBankTab", self.uiFrame)
@@ -87,7 +90,7 @@ function AG:CreateUI()
         self.uiFrame.realmBankTab:SetSize(self.uiFrame:GetWidth()-10,self.uiFrame:GetHeight()-10)
         self.uiFrame.realmBankTab:Hide()
         self.uiFrame.realmBankTab:SetScript("OnShow", function()
-            self.selectedTab = "AltsGaloreUiRealmBankTab"
+            self.selectedTab = "realmBankTab"
             self:UpdateTabButtons()
             self:SetScrollFrame()
         end)
@@ -97,12 +100,12 @@ function AG:CreateUI()
         self.uiFrame.realmBankTab.tabButton.Text:SetText("Realm Bank")
         self.uiFrame.realmBankTab.tabButton.Icon:SetIcon("Interface\\Icons\\achievement_guildperk_mobilebanking")
         self.uiFrame.realmBankTab.tabButton:SetScript("OnClick", function()
-            self.selectedTab = "AltsGaloreUiRealmBankTab"
+            self.selectedTab = "realmBankTab"
             self:UpdateTabButtons()
             self:SetFrameTab()
             self:SetScrollFrame()
         end)
-        tinsert(self.uiFrame.tabList, "AltsGaloreUiRealmBankTab")
+        tinsert(self.uiFrame.tabList, "realmBankTab")
 
         -------------------Guild Bank Tab Frame-------------------
         self.uiFrame.guildBankTab = CreateFrame("Frame", "AltsGaloreUiGuildBankTab", self.uiFrame)
@@ -110,7 +113,7 @@ function AG:CreateUI()
         self.uiFrame.guildBankTab:SetSize(self.uiFrame:GetWidth()-10,self.uiFrame:GetHeight()-10)
         self.uiFrame.guildBankTab:Hide()
         self.uiFrame.guildBankTab:SetScript("OnShow", function()
-            self.selectedTab = "AltsGaloreUiGuildBankTab"
+            self.selectedTab = "guildBankTab"
             self:UpdateTabButtons()
             self:SetScrollFrame()
         end)
@@ -120,12 +123,12 @@ function AG:CreateUI()
         self.uiFrame.guildBankTab.tabButton.Text:SetText("Guild Bank")
         self.uiFrame.guildBankTab.tabButton.Icon:SetIcon("Interface\\Icons\\achievement_guildperk_mobilebanking")
         self.uiFrame.guildBankTab.tabButton:SetScript("OnClick", function()
-            self.selectedTab = "AltsGaloreUiGuildBankTab"
+            self.selectedTab = "guildBankTab"
             self:UpdateTabButtons()
             self:SetFrameTab()
             self:SetScrollFrame()
         end)
-        tinsert(self.uiFrame.tabList, "AltsGaloreUiGuildBankTab")
+        tinsert(self.uiFrame.tabList, "guildBankTab")
         
         -------------------Search Tab Frame-------------------
         self.uiFrame.searchTab = CreateFrame("Frame", "AltsGaloreUiSearchTab", self.uiFrame)
@@ -133,7 +136,7 @@ function AG:CreateUI()
         self.uiFrame.searchTab:SetSize(self.uiFrame:GetWidth()-10,self.uiFrame:GetHeight()-10)
         self.uiFrame.searchTab:Hide()
         self.uiFrame.searchTab:SetScript("OnShow", function()
-            self.selectedTab = "AltsGaloreUiSearchTab"
+            self.selectedTab = "searchTab"
             self:SetFrameTab()
         end)
         self.uiFrame.searchTab.tabButton = CreateFrame("CheckButton", "AltsGaloreUiSearchTabButton", self.uiFrame, "AltsGaloreTabTemplate")
@@ -146,10 +149,10 @@ function AG:CreateUI()
         self.uiFrame.searchTab.tabButton.IconAtlas:SetSize(20,20)
         self.uiFrame.searchTab.tabButton.IconAtlas:SetAtlas("communities-icon-searchmagnifyingglass")
         self.uiFrame.searchTab.tabButton:SetScript("OnClick", function()
-            self.selectedTab = "AltsGaloreUiSearchTab"
+            self.selectedTab = "searchTab"
             self:SetFrameTab()
         end)
-        tinsert(self.uiFrame.tabList, "AltsGaloreUiSearchTab")
+        tinsert(self.uiFrame.tabList, "searchTab")
             --Search Edit Box
         self.uiFrame.searchbox = CreateFrame("EditBox", "AltsGaloreUiSearchBox", self.uiFrame, "SearchBoxTemplate")
         self.uiFrame.searchbox:SetSize(190,30)
@@ -182,15 +185,15 @@ end
 function AG:SetFrameTab()
     for _, tab in pairs(self.uiFrame.tabList) do
         if tab ~= self.selectedTab then
-            _G[tab.."Button"]:SetChecked(false)
-            _G[tab.."Button"]:UpdateButton()
-            _G[tab]:Hide()
+            self.uiFrame[tab].tabButton:SetChecked(false)
+            self.uiFrame[tab].tabButton:UpdateButton()
+            self.uiFrame[tab]:Hide()
         end
     end
 
-    _G[self.selectedTab.."Button"]:SetChecked(true)
-    _G[self.selectedTab.."Button"]:UpdateButton()
-    _G[self.selectedTab]:Show()
+    self.uiFrame[self.selectedTab].tabButton:SetChecked(true)
+    self.uiFrame[self.selectedTab].tabButton:UpdateButton()
+    self.uiFrame[self.selectedTab]:Show()
 end
 
 

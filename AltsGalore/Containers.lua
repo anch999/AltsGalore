@@ -78,7 +78,7 @@ function AG:ScanContainer(bagID)
             scanBag(bag)
         end
     end
-    if self.uiFrame.containerScrollFrame:IsVisible() then
+    if self.uiFrame.containerScrollFrame:IsVisible() and self.selectedCharacter == self.thisChar then
         self:SetScrollFrame()
     end
 end
@@ -135,14 +135,14 @@ function AG:GUILDBANKBAGSLOTS_CHANGED()
     end
 
     -- Refresh container scroll frame if the window is open
-    if self.uiFrame.containerScrollFrame:IsVisible() then
+    if self.uiFrame.containerScrollFrame:IsVisible() and self.selectedCharacter == self.thisChar then
         self:SetScrollFrame()
     end
 
 end
 
 function AG:GetContainer(tab)
-    if tab == "AltsGaloreUiContainersTab" then
+    if tab == "containersTab" then
         if  self.selectedBag[tab] == 1 then 
             return 1, 5, self.containersDB, self.selectedCharacter
         elseif self.selectedBag[tab] == 2 then
@@ -150,9 +150,9 @@ function AG:GetContainer(tab)
         elseif self.selectedBag[tab] >= 3 then
             return self.selectedBag[tab] - 2, self.selectedBag[tab] - 2, self.personalBanksDB, self.selectedCharacter
         end
-    elseif tab == "AltsGaloreUiRealmBankTab" then
+    elseif tab == "realmBankTab" then
         return self.selectedBag[tab], self.selectedBag[tab], self.realmBanksDB, "RealmBank"
-    elseif tab == "AltsGaloreUiGuildBankTab" then
+    elseif tab == "guildBankTab" then
         return self.selectedBag[tab], self.selectedBag[tab], self.guildBanksDB, self.selectedGuild
     end
 end
@@ -161,12 +161,12 @@ function AG:SetScrollFrame()
     self.selectedBag[self.selectedTab] = self.selectedBag[self.selectedTab] or 1
     local firstBag, lastBag, db, selection = self:GetContainer(self.selectedTab)
     if not db then return end
-    self.uiFrame.SelectionScrollFrame:SetParent(self.selectedTab)
+    self.uiFrame.SelectionScrollFrame:SetParent(self.uiFrame[self.selectedTab])
     self:ContainerScrollFrameUpdate(self:SetupContainerTable(db[selection], firstBag, lastBag))
     self:SelectionScrollFrameUpdate()
 end
 
-------------------ScrollFrameTooltips---------------------------
+------------------Create Containers Scroll Frame---------------------------
 function AG:ContainersTabsCreate()
 
 	--ScrollFrame
@@ -174,7 +174,7 @@ function AG:ContainersTabsCreate()
 	local ROW_HEIGHT = 16   -- How tall is each row?
 	local MAX_ROWS = 33      -- How many rows can be shown at once?
 
-	self.uiFrame.SelectionScrollFrame = CreateFrame("Frame", "AltsGaloreSelectionScrollFrame", AltsGaloreUiContainersTab)
+	self.uiFrame.SelectionScrollFrame = CreateFrame("Frame", "AltsGaloreSelectionScrollFrame", self.uiFrame.containersTab)
 	self.uiFrame.SelectionScrollFrame:EnableMouse(true)
 	self.uiFrame.SelectionScrollFrame:SetPoint("BOTTOMLEFT", 16, 16)
 	self.uiFrame.SelectionScrollFrame:SetBackdrop({
@@ -188,9 +188,9 @@ function AG:ContainersTabsCreate()
 
     local function getChars()
         local containerSettings = {
-            AltsGaloreUiContainersTab = {self.containersDB, "selectedCharacter", "Character Selection"},
-            AltsGaloreUiRealmBankTab = {self.realmBanksDB, "realBankSelected", "RealBank Selection"},
-            AltsGaloreUiGuildBankTab = {self.guildBanksDB, "selectedGuild", "Guild Selection"},
+            containersTab = {self.containersDB, "selectedCharacter", "Character Selection"},
+            realmBankTab = {self.realmBanksDB, "realBankSelected", "RealBank Selection"},
+            guildBankTab = {self.guildBanksDB, "selectedGuild", "Guild Selection"},
         }
         local container = containerSettings[self.selectedTab]
         if not container then return end
@@ -425,14 +425,14 @@ end
     function AG:SetContainerSelectionInfo(tab)
         local tabInfo = {}
         local db
-        if tab == "AltsGaloreUiContainersTab" then
+        if tab == "containersTab" then
             tinsert(tabInfo, {name = "Bags", icon = BAG_TEXTURE})
             tinsert(tabInfo,{name = "Bank", icon = BANK_BUTTON})
             db = self.personalBanksDB[self.selectedCharacter]
        
-        elseif tab == "AltsGaloreUiRealmBankTab" then
+        elseif tab == "realmBankTab" then
             db = self.realmBanksDB["RealmBank"]
-        elseif tab == "AltsGaloreUiGuildBankTab" then
+        elseif tab == "guildBankTab" then
             db = self.guildBanksDB[self.selectedGuild]
         end
         for _, bag in ipairs(db) do

@@ -46,7 +46,7 @@ end
 
 function AG:OnEnable()
     self:InitializeMinimap()
-    self:SetFrameTab("AltsGaloreUiSummaryTab")
+    self:SetFrameTab("summaryTab")
     self.realm = GetRealmName()
     self.thisChar = GetUnitName("player")
     self:RegisterEvent("GUILD_ROSTER_UPDATE")
@@ -130,6 +130,6 @@ function AG:SlashCommand(msg)
     elseif cmd == "options" then
         self:OptionsToggle()
     else
-        self:ToggleStandaloneButton()
+        self:UiOnShow()
     end
 end

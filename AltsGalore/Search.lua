@@ -163,7 +163,6 @@ function AG:CreateSearchFrame()
 local ROW_HEIGHT = 36   -- How tall is each row?
 local MAX_ROWS = 11      -- How many rows can be shown at once?
 
-------------------ScrollFrameTooltips---------------------------
 
 	self.uiFrame.SearchScrollFrame = CreateFrame("Frame", "AltsGaloreSearchScrollFrame", self.uiFrame.searchTab)
 	self.uiFrame.SearchScrollFrame:EnableMouse(true)
@@ -265,7 +264,7 @@ local MAX_ROWS = 11      -- How many rows can be shown at once?
             row[1]:SetSize(200, 22)
             row[1]:SetPoint("TOPLEFT", row, "TOPRIGHT", 10, 2)
             row[2]:SetSize(200, 14)
-            row[2]:SetPoint("CENTER", row[1], "BOTTOM", 0, -9)
+            row[2]:SetPoint("CENTER", row[1], "BOTTOM", 0, -7)
             row[3]:SetSize(150, 18)
             row[3]:SetPoint("LEFT", row[1], "RIGHT", 0, 0)
             row[4]:SetSize(400, 18)

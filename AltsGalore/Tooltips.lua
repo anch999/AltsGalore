@@ -5,20 +5,17 @@ local LIMEGREEN = "|cFF32CD32"
 local ORANGE= "|cFFFFA500"
 local AQUA  = "|cFF00FFFF"
 local GREEN  = "|cff00ff00"
-
-local function TooltipHandlerItem(tooltip)
+local headerSet
+local function SetHeader(tooltip)
+    if headerSet then return true end
+    GameTooltip:AddLine(tooltip)
+    return true
+end
+local function SetTooltip(itemID, headerTooltip)
     local self = AG
-    --checks for combat less likley to cause a lag spike
-    if UnitAffectingCombat("player") then return end
-    --get item link and itemID
-	local link = select(2, tooltip:GetItem())
-	if not link then return end
-	local itemID = GetItemInfoFromHyperlink(link)
-	if not itemID then return end
-
-
     local addLine
     local needSort = {}
+    headerSet = false
     for name, char in pairs(self.realmDB) do
         if name ~= "currency" then
             for _, currency in pairs(char.currency) do
@@ -76,6 +73,7 @@ local function TooltipHandlerItem(tooltip)
         end
     end
     GameTooltip:AddLine(" ")
+
     --creates the character tooltip from data thats just been processed
     for name, char in pairs(charList) do
         local cList = ""
@@ -106,6 +104,7 @@ local function TooltipHandlerItem(tooltip)
         end
 
         if total ~= 0 then
+            headerSet = SetHeader(headerTooltip)
             totalOwned = totalOwned + total
             GameTooltip:AddDoubleLine(GREEN..name, (ORANGE..total.." ")..cList)
         end
@@ -136,6 +135,7 @@ local function TooltipHandlerItem(tooltip)
         else
             tooltip = WHITE.."(Realm Bank: "..GREEN..realmBank.total..WHITE..")"
         end
+        headerSet = SetHeader(headerTooltip)
         GameTooltip:AddDoubleLine(CYAN.."Realm Bank", tooltip)
         totalOwned = totalOwned + realmBank.total
     end
@@ -168,6 +168,7 @@ local function TooltipHandlerItem(tooltip)
             else
                 tooltip = WHITE.."(Guild Bank: "..GREEN..guildBank[name].total..WHITE..")"
             end
+            headerSet = SetHeader(headerTooltip)
             GameTooltip:AddDoubleLine(ORANGE..name, tooltip)
             if not bags.hideInTotal then
                 totalOwned = totalOwned + guildBank[name].total
@@ -177,8 +178,38 @@ local function TooltipHandlerItem(tooltip)
 
     if totalOwned ~= 0 then
         GameTooltip:AddLine("Total Owned: "..GREEN..totalOwned)
-        GameTooltip:AddLine(" ")
     end
 end
 
+local function TooltipHandlerItem(tooltip)
+    --checks for combat less likley to cause a lag spike
+    if UnitAffectingCombat("player") then return end
+    --get item link and itemID
+	local link = select(2, tooltip:GetItem())
+	if not link then return end
+	local itemID = GetItemInfoFromHyperlink(link)
+	if not itemID then return end
+    SetTooltip(itemID)
+end
+
 GameTooltip:HookScript("OnTooltipSetItem", TooltipHandlerItem)
+
+-- All types, primarily for detached tooltips
+local function onSetHyperlink(self, link)
+    if UnitAffectingCombat("player") then return end
+    local type, id = string.match(link,"^(%a+):(%d+)")
+    if not type or not id then return end
+    if type == "quest" then
+        local quest = GetQuestTemplate(id)
+        if quest.RequiredItemId then
+            for _, itemID in pairs(quest.RequiredItemId) do
+                if itemID and itemID ~= 0 then
+                    SetTooltip(itemID, select(2,GetItemInfo(itemID)))
+                end
+            end
+        end
+    end
+end
+
+hooksecurefunc(ItemRefTooltip, "SetHyperlink", onSetHyperlink)
+hooksecurefunc(GameTooltip, "SetHyperlink", onSetHyperlink)
