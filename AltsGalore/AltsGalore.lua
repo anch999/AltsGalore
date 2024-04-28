@@ -67,6 +67,8 @@ function AG:OnEnable()
     self.uiFrame.characterSelect:SetText(self.selectedCharacter)
     AG:CURRENCY_DISPLAY_UPDATE()
     --self.standaloneButton:SetScale(self.db.buttonScale or 1)
+    --Add the AltsGalore to the special frames tables to enable closing wih the ESC key
+	tinsert(UISpecialFrames, "AltsGaloreUI")
 end
 
 function AG:GUILD_ROSTER_UPDATE()
