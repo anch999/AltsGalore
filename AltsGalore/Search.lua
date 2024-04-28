@@ -353,6 +353,7 @@ function AG:FixText(text)
      text = gsub(text, ", Junk", "Misc")
      text = gsub(text, "%(OBSOLETE%)", "")
      text = gsub(text, ", Food & Drink", "Food & Drink")
+     text = gsub(text, ", Parts", "Engineering Parts")
 
      text = gsub(text, ", Red", "Red Gem")
      text = gsub(text, ", Blue", "Blue Gem")

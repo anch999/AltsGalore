@@ -6,12 +6,15 @@ local ORANGE= "|cFFFFA500"
 local AQUA  = "|cFF00FFFF"
 local GREEN  = "|cff00ff00"
 local headerSet
+
+-- set a one off header at the top of the added tooltip info
 local function SetHeader(tooltip)
     if headerSet then return true end
     GameTooltip:AddLine(tooltip)
     return true
 end
-local function SetTooltip(itemID, headerTooltip)
+
+local function SetCurrencyTooltip(itemID)
     local self = AG
     local addLine
     local needSort = {}
@@ -26,13 +29,19 @@ local function SetTooltip(itemID, headerTooltip)
         end
     end
     for currency, name in AG:PairsByKeys(needSort, true) do
-        GameTooltip:AddDoubleLine(GREEN..name, WHITE.."(Currency: "..GREEN..currency..WHITE..")")
+        GameTooltip:AddDoubleLine(GREEN..name, WHITE.."(Currency: "..GREEN..BreakUpLargeNumbers(currency)..WHITE..")")
         addLine = true
     end
     if addLine then
         GameTooltip:AddLine(" ")
         return
     end
+end
+
+-- finds and sets the tooltip for the itemID that it is sent
+local function SetTooltip(itemID, headerTooltip)
+    local self = AG
+    headerSet = false
 
     --create list of characters that have the item in there bag/bank to be shown on the items tooltip
     local totalOwned = 0
@@ -181,6 +190,7 @@ local function SetTooltip(itemID, headerTooltip)
     end
 end
 
+-- item tooltip handler
 local function TooltipHandlerItem(tooltip)
     --checks for combat less likley to cause a lag spike
     if UnitAffectingCombat("player") then return end
@@ -189,12 +199,13 @@ local function TooltipHandlerItem(tooltip)
 	if not link then return end
 	local itemID = GetItemInfoFromHyperlink(link)
 	if not itemID then return end
+    SetCurrencyTooltip(itemID)
     SetTooltip(itemID)
 end
 
 GameTooltip:HookScript("OnTooltipSetItem", TooltipHandlerItem)
 
--- All types, primarily for detached tooltips
+-- quest hyperlink handler
 local function onSetHyperlink(self, link)
     if UnitAffectingCombat("player") then return end
     local type, id = string.match(link,"^(%a+):(%d+)")
