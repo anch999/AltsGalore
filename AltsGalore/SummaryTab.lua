@@ -5,12 +5,15 @@ local LIMEGREEN = "|cFF32CD32"
 local ORANGE= "|cFFFFA500"
 local AQUA  = "|cFF00FFFF"
 local GREEN  = "|cff00ff00"
-AG.uiFrame.SummaryList = {
-    "Currencys"
-}
-AG.selectedSummaryList = "Currencys"
+
+
 ------------------Create Summary Scroll Frame---------------------------
 function AG:SummaryTabCreate()
+
+	self.uiFrame.SummaryList = {
+		"Currencys"
+	}
+	self.selectedSummaryList = "Currencys"
 
 	--ScrollFrame
 
@@ -116,6 +119,31 @@ function AG:SummaryTabCreate()
 	self.uiFrame.SummaryDataScrollFrame.lable3:SetText("Location")
     self.uiFrame.SummaryDataScrollFrame.lable3:SetFont("Fonts\\FRIZQT__.TTF", 15)
 
+	self.uiFrame.summaryTab.currencyDisplay = {}
+
+	function AG:CreateCurrencyTableDisplay()
+		local display = self.uiFrame.summaryTab.currencyDisplay
+		local currentGroup
+		for name, char in pairs(self.realmDB) do
+			if name ~= "currency" then
+				for _, currency in ipairs(char.currency) do
+					if type(currency) == "string" then
+						if not display[currency] then
+							display[currency] = {}
+						end
+						currentGroup = currency
+					else
+						if not display[currentGroup] then display[currentGroup] = {} end
+						if not display[currentGroup][name] then display[currentGroup][name] = {} end
+						if currency[3] then
+							display[currentGroup][name][currency[3]] = currency
+						end
+					end
+				end
+			end
+		end
+	end
+
 	function AG:SummaryDataScrollFrameUpdate()
         if not self.SearchResults then return end
 		local maxValue = #self.SearchResults
@@ -179,25 +207,17 @@ function AG:SummaryTabCreate()
     end
 
 	local rows = setmetatable({}, { __index = function(t, i)
-        local row = CreateFrame("Button", "$parentRow"..i, self.uiFrame.SummaryDataScrollFrame , "ItemButtonTemplate")
+        local row = CreateFrame("Button", "$parentRow"..i, self.uiFrame.SummaryDataScrollFrame)
             row:SetSize(ROW_HEIGHT + 0.5, ROW_HEIGHT)
             row:SetScript("OnEnter", function(button) self:ItemTemplate_OnEnter(button) end)
             row:SetScript("OnLeave", self.ItemTemplate_OnLeave)
-            for num = 1, 5 do
-                CreateRow(row, num)
-                row[num]:ClearAllPoints()
-            end
-
-            row[1]:SetSize(200, 22)
-            row[1]:SetPoint("TOPLEFT", row, "TOPRIGHT", 10, 2)
-            row[2]:SetSize(200, 14)
-            row[2]:SetPoint("CENTER", row[1], "BOTTOM", 0, -9)
-            row[3]:SetSize(150, 18)
-            row[3]:SetPoint("LEFT", row[1], "RIGHT", 0, 0)
-            row[4]:SetSize(400, 18)
-            row[4]:SetPoint("LEFT", row[3], "RIGHT", 0, 0)
-            row[5]:SetSize(400, 18)
-            row[5]:SetPoint("CENTER", row[4], "BOTTOM", 0, -7)
+			row:SetSize(ROW_HEIGHT * MAX_COLUMNS + 0.5, ROW_HEIGHT)
+			for num = 1, MAX_COLUMNS do
+				row["button"..num] = CreateFrame("Button", "$parentButton"..num, row , "ItemButtonTemplate")
+				row["button"..num]:SetSize(ROW_HEIGHT, ROW_HEIGHT)
+				row["button"..num]:SetScript("OnEnter", function(button) self:ItemTemplate_OnEnter(button) end)
+				row["button"..num]:SetScript("OnLeave", self.ItemTemplate_OnLeave)
+			end
 
 		rawset(t, i, row)
 		return row

@@ -64,50 +64,53 @@ function AG:FullSearch()
             end
         end
     end
-
-    for name, charDB in pairs(self.personalBanksDB) do
-        for bagNum, bag in pairs(charDB) do
-            for _, slot in pairs(bag) do
-                if type(slot) == "table" then
-                    itemList.Container[slot[1]] = itemList.Container[slot[1]] or {}
-                    itemList.Container[slot[1]][name] = itemList.Container[slot[1]][name] or {}
-                    itemList.Container[slot[1]][name][bagNum+2] = itemList.Container[slot[1]][name][bagNum+2] or {}
-                    local currentBag = itemList.Container[slot[1]][name][bagNum+2]
-                    currentBag[1] = currentBag[1] and currentBag[1] + slot[2] or slot[2]
-                    currentBag[2] = bag.name
-                    currentBag[3] = "Personal Bank"
+    if self.personalBanksDB then
+        for name, charDB in pairs(self.personalBanksDB) do
+            for bagNum, bag in pairs(charDB) do
+                for _, slot in pairs(bag) do
+                    if type(slot) == "table" then
+                        itemList.Container[slot[1]] = itemList.Container[slot[1]] or {}
+                        itemList.Container[slot[1]][name] = itemList.Container[slot[1]][name] or {}
+                        itemList.Container[slot[1]][name][bagNum+2] = itemList.Container[slot[1]][name][bagNum+2] or {}
+                        local currentBag = itemList.Container[slot[1]][name][bagNum+2]
+                        currentBag[1] = currentBag[1] and currentBag[1] + slot[2] or slot[2]
+                        currentBag[2] = bag.name
+                        currentBag[3] = "Personal Bank"
+                    end
                 end
             end
         end
     end
-
-    for name, charDB in pairs(self.realmBanksDB) do
-        for bagNum, bag in pairs(charDB) do
-            for _, slot in pairs(bag) do
-                if type(slot) == "table" then
-                    itemList.RealmBank[slot[1]] = itemList.RealmBank[slot[1]] or {}
-                    itemList.RealmBank[slot[1]][name] = itemList.RealmBank[slot[1]][name] or {}
-                    itemList.RealmBank[slot[1]][name][bagNum] = itemList.RealmBank[slot[1]][name][bagNum] or {}
-                    local currentBag = itemList.RealmBank[slot[1]][name][bagNum]
-                    currentBag[1] = currentBag[1] and currentBag[1] + slot[2] or slot[2]
-                    currentBag[2] = bag.name
-                    currentBag[3] = "Realm Bank"
+    if self.realmBanksDB then
+        for name, charDB in pairs(self.realmBanksDB) do
+            for bagNum, bag in pairs(charDB) do
+                for _, slot in pairs(bag) do
+                    if type(slot) == "table" then
+                        itemList.RealmBank[slot[1]] = itemList.RealmBank[slot[1]] or {}
+                        itemList.RealmBank[slot[1]][name] = itemList.RealmBank[slot[1]][name] or {}
+                        itemList.RealmBank[slot[1]][name][bagNum] = itemList.RealmBank[slot[1]][name][bagNum] or {}
+                        local currentBag = itemList.RealmBank[slot[1]][name][bagNum]
+                        currentBag[1] = currentBag[1] and currentBag[1] + slot[2] or slot[2]
+                        currentBag[2] = bag.name
+                        currentBag[3] = "Realm Bank"
+                    end
                 end
             end
         end
     end
-
-    for name, charDB in pairs(self.guildBanksDB) do
-        for bagNum, bag in pairs(charDB) do
-            for _, slot in pairs(bag) do
-                if type(slot) == "table" then
-                    itemList.GuildBank[slot[1]] = itemList.GuildBank[slot[1]] or {}
-                    itemList.GuildBank[slot[1]][name] = itemList.GuildBank[slot[1]][name] or {}
-                    itemList.GuildBank[slot[1]][name][bagNum] = itemList.GuildBank[slot[1]][name][bagNum] or {}
-                    local currentBag = itemList.GuildBank[slot[1]][name][bagNum]
-                    currentBag[1] = currentBag[1] and currentBag[1] + slot[2] or slot[2]
-                    currentBag[2] = bag.name
-                    currentBag[3] = "Guild Bank"
+    if self.guildBanksDB then
+        for name, charDB in pairs(self.guildBanksDB) do
+            for bagNum, bag in pairs(charDB) do
+                for _, slot in pairs(bag) do
+                    if type(slot) == "table" then
+                        itemList.GuildBank[slot[1]] = itemList.GuildBank[slot[1]] or {}
+                        itemList.GuildBank[slot[1]][name] = itemList.GuildBank[slot[1]][name] or {}
+                        itemList.GuildBank[slot[1]][name][bagNum] = itemList.GuildBank[slot[1]][name][bagNum] or {}
+                        local currentBag = itemList.GuildBank[slot[1]][name][bagNum]
+                        currentBag[1] = currentBag[1] and currentBag[1] + slot[2] or slot[2]
+                        currentBag[2] = bag.name
+                        currentBag[3] = "Guild Bank"
+                    end
                 end
             end
         end

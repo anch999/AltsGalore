@@ -144,7 +144,7 @@ local realmWideCurrencyIDs = {
         [1008000] = true,   -- Season's Achievement     
 }
 
-function AG:CURRENCY_DISPLAY_UPDATE()
+function AG:UpdateCurrencyDB()
     self.charDB.currency = self.charDB.currency or {}
     self.realmDB.currency = self.realmDB.currency or  {}
     local currencies = self.charDB.currency
@@ -163,7 +163,14 @@ function AG:CURRENCY_DISPLAY_UPDATE()
             currencies[i] = {name, count, itemID}
         end
     end
+end
 
+function AG:CURRENCY_DISPLAY_UPDATE()
+    AG:UpdateCurrencyDB()
+end
+
+function AG:MERCHANT_UPDATE()
+    AG:UpdateCurrencyDB()
 end
 
 function AG:PLAYER_MONEY()

@@ -66,19 +66,21 @@ local function SetTooltip(itemID, headerTooltip)
     end
     --add characters personal bank to list if it has the item
     local personalBank = {}
-    for name, bags in pairs(self.personalBanksDB) do
-        personalBank[name] = personalBank[name] or {}
-        for i, bag in pairs(bags) do
-            for _, slot in pairs(bag) do
-                if type(slot) == "table" and slot[1] == itemID then
-                    personalBank[name][i] = personalBank[name][i] or {name = bag.name}
-                    personalBank[name][i].count = personalBank[name][i].count and personalBank[name][i].count + slot[2] or slot[2]
+    if self.personalBanksDB then
+        for name, bags in pairs(self.personalBanksDB) do
+            personalBank[name] = personalBank[name] or {}
+            for i, bag in pairs(bags) do
+                for _, slot in pairs(bag) do
+                    if type(slot) == "table" and slot[1] == itemID then
+                        personalBank[name][i] = personalBank[name][i] or {name = bag.name}
+                        personalBank[name][i].count = personalBank[name][i].count and personalBank[name][i].count + slot[2] or slot[2]
+                    end
                 end
-            end
-            if personalBank[name][i] then
-                personalBank[name].total = personalBank[name].total and personalBank[name].total + personalBank[name][i].count or personalBank[name][i].count
-            end
+                if personalBank[name][i] then
+                    personalBank[name].total = personalBank[name].total and personalBank[name].total + personalBank[name][i].count or personalBank[name][i].count
+                end
 
+            end
         end
     end
     GameTooltip:AddLine(" ")
@@ -120,15 +122,17 @@ local function SetTooltip(itemID, headerTooltip)
     end
     --creates the realm bank data and tooltip
     local realmBank = {}
-    for i, bag in pairs(self.realmBanksDB.RealmBank) do
-        for _, slot in pairs(bag) do
-            if type(slot) == "table" and slot[1] == itemID then
-                realmBank[i] = realmBank[i] or {name = bag.name}
-                realmBank[i].count = realmBank[i].count and realmBank[i].count + slot[2] or slot[2]
+    if self.realmBanksDB and self.realmBanksDB.RealmBank then
+        for i, bag in pairs(self.realmBanksDB.RealmBank) do
+            for _, slot in pairs(bag) do
+                if type(slot) == "table" and slot[1] == itemID then
+                    realmBank[i] = realmBank[i] or {name = bag.name}
+                    realmBank[i].count = realmBank[i].count and realmBank[i].count + slot[2] or slot[2]
+                end
             end
-        end
-        if realmBank[i] then
-            realmBank.total = realmBank.total and realmBank.total + realmBank[i].count or realmBank[i].count
+            if realmBank[i] then
+                realmBank.total = realmBank.total and realmBank.total + realmBank[i].count or realmBank[i].count
+            end
         end
     end
     if realmBank and realmBank.total then
@@ -150,37 +154,39 @@ local function SetTooltip(itemID, headerTooltip)
     end
     --creates the guild bank data and tooltip
     local guildBank = {}
-    for name, bags in pairs(self.guildBanksDB) do
-        guildBank[name] = {}
-        for i, bag in pairs(bags) do
-            for _, slot in pairs(bag) do
-                if type(slot) == "table" and slot[1] == itemID then
-                    guildBank[name][i] = guildBank[name][i] or {name = bag.name}
-                    guildBank[name][i].count = guildBank[name][i].count and guildBank[name][i].count + slot[2] or slot[2]
-                end
-            end
-            if guildBank[name][i] then
-                guildBank[name].total = guildBank[name].total and guildBank[name].total + guildBank[name][i].count or guildBank[name][i].count
-            end
-
-        end
-        if guildBank[name] and guildBank[name].total then
-            local tooltip
-            if IsShiftKeyDown() or self.detailedGuildBankCount or self.shiftKeyDown then
-                for _, v in pairs(guildBank[name]) do
-                    if type(v) == "table" then
-                        local text = WHITE.."("..v.name..": "..GREEN..v.count..WHITE..")"
-                        tooltip = tooltip and tooltip .. text or text
+    if self.guildBanksDB then
+        for name, bags in pairs(self.guildBanksDB) do
+            guildBank[name] = {}
+            for i, bag in pairs(bags) do
+                for _, slot in pairs(bag) do
+                    if type(slot) == "table" and slot[1] == itemID then
+                        guildBank[name][i] = guildBank[name][i] or {name = bag.name}
+                        guildBank[name][i].count = guildBank[name][i].count and guildBank[name][i].count + slot[2] or slot[2]
                     end
                 end
-                tooltip = ORANGE..guildBank[name].total..tooltip
-            else
-                tooltip = WHITE.."(Guild Bank: "..GREEN..guildBank[name].total..WHITE..")"
+                if guildBank[name][i] then
+                    guildBank[name].total = guildBank[name].total and guildBank[name].total + guildBank[name][i].count or guildBank[name][i].count
+                end
+
             end
-            headerSet = SetHeader(headerTooltip)
-            GameTooltip:AddDoubleLine(ORANGE..name, tooltip)
-            if not bags.hideInTotal then
-                totalOwned = totalOwned + guildBank[name].total
+            if guildBank[name] and guildBank[name].total then
+                local tooltip
+                if IsShiftKeyDown() or self.detailedGuildBankCount or self.shiftKeyDown then
+                    for _, v in pairs(guildBank[name]) do
+                        if type(v) == "table" then
+                            local text = WHITE.."("..v.name..": "..GREEN..v.count..WHITE..")"
+                            tooltip = tooltip and tooltip .. text or text
+                        end
+                    end
+                    tooltip = ORANGE..guildBank[name].total..tooltip
+                else
+                    tooltip = WHITE.."(Guild Bank: "..GREEN..guildBank[name].total..WHITE..")"
+                end
+                headerSet = SetHeader(headerTooltip)
+                GameTooltip:AddDoubleLine(ORANGE..name, tooltip)
+                if not bags.hideInTotal then
+                    totalOwned = totalOwned + guildBank[name].total
+                end
             end
         end
     end

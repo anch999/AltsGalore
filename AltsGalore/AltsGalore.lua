@@ -57,6 +57,7 @@ function AG:OnEnable()
     self:RegisterEvent("BAG_UPDATE")
     self:RegisterEvent("PLAYER_MONEY")
     self:RegisterEvent("CURRENCY_DISPLAY_UPDATE")
+    self:RegisterEvent("MERCHANT_UPDATE")
     self:InitializeStorgeDBs()
     self.selectedCharacter = self.thisChar
     self.realBankSelected = "RealmBank"
@@ -65,7 +66,7 @@ function AG:OnEnable()
     self.charDB = self.db[self.realm][self.thisChar]
     self.realmDB = self.db[self.realm]
     self.uiFrame.characterSelect:SetText(self.selectedCharacter)
-    AG:CURRENCY_DISPLAY_UPDATE()
+    AG:UpdateCurrencyDB()
     --self.standaloneButton:SetScale(self.db.buttonScale or 1)
     --Add the AltsGalore to the special frames tables to enable closing wih the ESC key
 	tinsert(UISpecialFrames, "AltsGaloreUI")
