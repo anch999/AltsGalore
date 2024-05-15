@@ -145,6 +145,8 @@ local realmWideCurrencyIDs = {
 }
 
 function AG:UpdateCurrencyDB()
+    if not self.realmDB or not self.charDB then return end
+
     self.charDB.currency = self.charDB.currency or {}
     self.realmDB.currency = self.realmDB.currency or  {}
     local currencies = self.charDB.currency

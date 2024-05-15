@@ -35,6 +35,7 @@ end
 
 -- Scans the id of the bag/bank tab it is sent
 function AG:ScanContainer(bagID)
+    if not self.containersDB then return end
 	local function bagInfo(bagID, storedBagID)
         if storedBagID == 1 or storedBagID == 6 then	-- Bag 0	
             return "Interface\\Buttons\\Button-Backpack-Up"
