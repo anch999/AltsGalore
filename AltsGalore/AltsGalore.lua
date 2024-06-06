@@ -22,8 +22,9 @@ CheckBox = Global name of the checkbox if it has one and first numbered table en
 Text = Global name of where the text and first numbered table entry is the default text 
 Frame = Frame or button etc you want hidden/shown at start based on condition ]]
 local function setupSettings(db, defaultList)
+    db = db or {}
     for table, v in pairs(defaultList) do
-        if not db[table] then
+        if not db[table] and db[table] ~= false then
             if type(v) == "table" then
                 db[table] = v[1]
             else
@@ -31,18 +32,19 @@ local function setupSettings(db, defaultList)
             end
         end
         if type(v) == "table" then
-            if v.CheckBox then
+            if v.CheckBox and _G[v.CheckBox] then
                 _G[v.CheckBox]:SetChecked(db[table])
             end
-            if v.Text then
+            if v.Text and _G[v.Text] then
                 _G[v.Text]:SetText(db[table])
             end
-            if v.Frame then
+            if v.Frame and _G[v.Frame] then
                 if db[table] then _G[v.Frame]:Hide() else _G[v.Frame]:Show() end
             end
         end
     end
-end
+    return db
+  end
 
 function AG:OnEnable()
     self:InitializeMinimap()
@@ -100,14 +102,9 @@ function AG:BANKFRAME_CLOSED()
 end
 
 function AG:OnInitialize()
-
-    AltsGaloreDB = AltsGaloreDB or {}
-    AltsGaloreCharDB = AltsGaloreCharDB or {}
-    self.db = AltsGaloreDB
-    self.charDB = AltsGaloreCharDB
-
-    setupSettings(self.db, DefaultSettings)
-    setupSettings(self.charDB, CharDefaultSettings)
+    --setup dbs
+    self.db = setupSettings(AltsGaloreDB, DefaultSettings)
+    self.charDB = setupSettings(AltsGaloreCharDB, CharDefaultSettings)
     --Enable the use of /AltsGalore slash command
     ALTSGALORE1 = "/altsgalore"
     ALTSGALORE2 = "/ag"

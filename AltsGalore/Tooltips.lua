@@ -8,13 +8,23 @@ local GREEN  = "|cff00ff00"
 local headerSet
 
 -- set a one off header at the top of the added tooltip info
-local function SetHeader(tooltip)
+local function SetHeader(tooltip, text)
     if headerSet then return true end
-    GameTooltip:AddLine(tooltip)
+    tooltip:AddLine(text)
     return true
 end
 
-local function SetCurrencyTooltip(itemID)
+local function CheckTooltipForDuplicate(tooltip, text)
+    -- Check if we already added to this tooltip. Happens on the talent frame
+    for i = 1,15 do
+        local frame = _G[tooltip:GetName() .. "TextLeft" .. i]
+        local textOld
+        if frame then textOld = frame:GetText() end
+        if textOld and textOld == text then return true end
+    end
+end
+
+local function SetCurrencyTooltip(itemID, tooltip)
     local self = AG
     local addLine
     local needSort = {}
@@ -29,17 +39,20 @@ local function SetCurrencyTooltip(itemID)
         end
     end
     for currency, name in AG:PairsByKeys(needSort, true) do
-        GameTooltip:AddDoubleLine(GREEN..name, WHITE.."(Currency: "..GREEN..BreakUpLargeNumbers(currency)..WHITE..")")
-        addLine = true
+        local textLeft, textRight = GREEN..name, WHITE.."(Currency: "..GREEN..BreakUpLargeNumbers(currency)..WHITE..")"
+        if not CheckTooltipForDuplicate(tooltip, textLeft) then
+            tooltip:AddDoubleLine(textLeft, textRight)
+            addLine = true
+        end
     end
     if addLine then
-        GameTooltip:AddLine(" ")
+        tooltip:AddLine(" ")
         return
     end
 end
 
 -- finds and sets the tooltip for the itemID that it is sent
-local function SetTooltip(itemID, headerTooltip)
+local function SetTooltip(itemID, tooltipFrame, headerTooltip)
     local self = AG
     headerSet = false
 
@@ -83,7 +96,7 @@ local function SetTooltip(itemID, headerTooltip)
             end
         end
     end
-    GameTooltip:AddLine(" ")
+    tooltipFrame:AddLine(" ")
 
     --creates the character tooltip from data thats just been processed
     for name, char in pairs(charList) do
@@ -115,9 +128,12 @@ local function SetTooltip(itemID, headerTooltip)
         end
 
         if total ~= 0 then
-            headerSet = SetHeader(headerTooltip)
-            totalOwned = totalOwned + total
-            GameTooltip:AddDoubleLine(GREEN..name, (ORANGE..total.." ")..cList)
+            local textLeft, textRight = GREEN..name, (ORANGE..total.." ")..cList
+            if not CheckTooltipForDuplicate(tooltipFrame, textLeft) then
+                headerSet = SetHeader(tooltipFrame, headerTooltip)
+                totalOwned = totalOwned + total
+                tooltipFrame:AddDoubleLine(textLeft, textRight)
+            end
         end
     end
     --creates the realm bank data and tooltip
@@ -148,9 +164,12 @@ local function SetTooltip(itemID, headerTooltip)
         else
             tooltip = WHITE.."(Realm Bank: "..GREEN..realmBank.total..WHITE..")"
         end
-        headerSet = SetHeader(headerTooltip)
-        GameTooltip:AddDoubleLine(CYAN.."Realm Bank", tooltip)
-        totalOwned = totalOwned + realmBank.total
+        local textLeft, textRight = CYAN.."Realm Bank", tooltip
+        if not CheckTooltipForDuplicate(tooltipFrame, textLeft) then
+            headerSet = SetHeader(tooltipFrame, headerTooltip)
+            tooltipFrame:AddDoubleLine(textLeft, textRight)
+            totalOwned = totalOwned + realmBank.total
+        end 
     end
     --creates the guild bank data and tooltip
     local guildBank = {}
@@ -182,8 +201,11 @@ local function SetTooltip(itemID, headerTooltip)
                 else
                     tooltip = WHITE.."(Guild Bank: "..GREEN..guildBank[name].total..WHITE..")"
                 end
-                headerSet = SetHeader(headerTooltip)
-                GameTooltip:AddDoubleLine(ORANGE..name, tooltip)
+                local textLeft, textRight = ORANGE..name, tooltip
+                if not CheckTooltipForDuplicate(tooltipFrame, textLeft) then
+                    headerSet = SetHeader(tooltipFrame, headerTooltip)
+                    tooltipFrame:AddDoubleLine(textLeft, textRight)
+                end 
                 if not bags.hideInTotal then
                     totalOwned = totalOwned + guildBank[name].total
                 end
@@ -192,7 +214,10 @@ local function SetTooltip(itemID, headerTooltip)
     end
 
     if totalOwned ~= 0 then
-        GameTooltip:AddLine("Total Owned: "..GREEN..totalOwned)
+        local text = "Total Owned: "..GREEN..totalOwned
+        if not CheckTooltipForDuplicate(tooltipFrame, text) then
+            tooltipFrame:AddLine(text)
+        end
     end
 end
 
@@ -205,14 +230,15 @@ local function TooltipHandlerItem(tooltip)
 	if not link then return end
 	local itemID = GetItemInfoFromHyperlink(link)
 	if not itemID then return end
-    SetCurrencyTooltip(itemID)
-    SetTooltip(itemID)
+    SetCurrencyTooltip(itemID, tooltip)
+    SetTooltip(itemID, tooltip)
 end
 
 GameTooltip:HookScript("OnTooltipSetItem", TooltipHandlerItem)
 
 -- quest hyperlink handler
 local function onSetHyperlink(self, link)
+    local tooltip = GameTooltip
     if UnitAffectingCombat("player") then return end
     local type, id = string.match(link,"^(%a+):(%d+)")
     if not type or not id then return end
@@ -221,7 +247,7 @@ local function onSetHyperlink(self, link)
         if quest.RequiredItemId then
             for _, itemID in pairs(quest.RequiredItemId) do
                 if itemID and itemID ~= 0 then
-                    SetTooltip(itemID, select(2,GetItemInfo(itemID)))
+                    SetTooltip(itemID, tooltip, select(2,GetItemInfo(itemID)))
                 end
             end
         end

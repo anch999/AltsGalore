@@ -122,7 +122,7 @@ function AG:PairsByKeys(t, reverse)
       end
     end
     return iter
-  end
+end
 
 function AG:GetItemIdFromLink(link)
     if not link then return end
