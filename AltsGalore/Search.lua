@@ -18,18 +18,17 @@ function AG:ProcessItem(data)
     if itemID then
         local item = Item:CreateFromID(itemID)
         local function nextItem(itemID, data)
-            local itemData = {GetItemInfo(itemID)}
+            local itemData = {self:GetItemInfo(itemID)}
             if string.find(string.lower(itemData[1]), string.lower(self.uiFrame.searchbox:GetText())) then
                 tinsert(self.SearchResults, {data, itemData})
             end
             self:SearchScrollFrameUpdate()
         end
+            nextItem(itemID, data)
             if not item:GetInfo() then
                 item:ContinueOnLoad(function()
                     nextItem(itemID, data)
                 end)
-            else
-                nextItem(itemID, data)
             end
     end
 end
@@ -124,12 +123,14 @@ function AG:FullSearch()
                 local countTextL2
                 local totalCount = 0
                 local totalGbCount
+                local bankType
                 local text = ""
                 for _, data in pairs (bag) do
                     if data[3] then
                         countTextL2 = countTextL2 and countTextL2 .. WHITE .. " | " .. data[2]..": " .. GREEN .. data[1] or AQUA .."Tabs " .. WHITE .. "- "..data[2]..": " .. GREEN .. data[1]
                         totalGbCount = totalGbCount and totalGbCount + data[1] or data[1]
                         text = WHITE..data[3]..": "
+                        bankType = data[3]
                     else
                         countText = countText and countText..WHITE.." | "..data[2]..": "..GREEN..data[1] or WHITE..data[2]..": "..GREEN..data[1]
                     end
@@ -137,7 +138,7 @@ function AG:FullSearch()
                     totalCount = totalCount + data[1]
                 end
                 text = countText and totalGbCount and countText.." | "..text..GREEN..totalGbCount or totalGbCount and text..GREEN..totalGbCount or countText
-                tinsert(combindedList, {{itemID, name, text, totalCount, countTextL2}})
+                tinsert(combindedList, {{itemID, name, text, totalCount, countTextL2, bankType}})
             end
         end
     end
@@ -217,12 +218,13 @@ local MAX_ROWS = 11      -- How many rows can be shown at once?
                         row:Hide()
                     else
                         local itemData = self.SearchResults[value][2]
-                        local _, name, container, total, containerL2 = unpack(self.SearchResults[value][1])
+                        local _, name, container, total, containerL2, bankType = unpack(self.SearchResults[value][1])
                         row.itemLink, row.itemTexture, row.quality = itemData[2], itemData[10], itemData[3]
                         row.count = total
                         row[1].Text:SetText(select(4,GetItemQualityColor(row.quality))..itemData[1])
-                        row[2].Text:SetText(AG:FixText(itemData[9]..", ".. itemData[7]))
-                        row[3].Text:SetText(GREEN .. name)
+                        local text = (itemData[9] and itemData[9] ~= "") and AG:FixText(itemData[9]..", ".. itemData[7]) or itemData[7]
+                        row[2].Text:SetText(text)
+                        row[3].Text:SetText((bankType == "Realm Bank") and CYAN..name or (bankType == "Guild Bank") and ORANGE .. name or GREEN .. name)
                         row[4].Text:SetText(container)
                         row[5].Text:SetText(containerL2)
                         SetButton()
@@ -285,111 +287,88 @@ end
 
 AG:CreateSearchFrame()
 
+local txtSubstitution = {
+    -- Body Slot
+    { "INVTYPE_HEAD", "Head" },
+    { "INVTYPE_NECK, Miscellaneous", "Neck" },
+    { "INVTYPE_SHOULDER", "Shoulder" },
+    { "INVTYPE_CLOAK, Cloth", "Back" },
+    { "INVTYPE_CHEST", "Chest" },
+    { "INVTYPE_BODY", "Shirt" },
+    { "INVTYPE_ROBE", "Chest" },
+    { "INVTYPE_TABARD, Miscellaneous", "Tabard" },
+    { "INVTYPE_WRIST", "Wrist" },
+    { "INVTYPE_HAND", "Hands" },
+    { "INVTYPE_WAIST", "Waist" },
+    { "INVTYPE_LEGS", "Legs" },
+    { "INVTYPE_FEET", "Feet" },
+    { "INVTYPE_FINGER, Miscellaneous", "Ring" },
+    { "INVTYPE_TRINKET, Miscellaneous", "Trinket" },
+    { "INVTYPE_RELIC, Miscellaneous", "Relic" },
+
+    -- Weapon Weilding
+    { "INVTYPE_WEAPON, ", "" },
+    { "INVTYPE_2HWEAPON, ", "" },
+    { "INVTYPE_WEAPONMAINHAND, One%-Handed Swords", "Main-Hand Sword" },
+    { "INVTYPE_WEAPONMAINHAND, One%-Handed Maces", "Main-Hand Mace" },
+    { "INVTYPE_WEAPONMAINHAND, Daggers", "Main-Hand Dagger" },
+    { "INVTYPE_WEAPONMAINHAND, Fist Weapons", "Main-Hand Fist Weapon" },
+    { "INVTYPE_WEAPONOFFHAND, One%-Handed Swords", "Off-Hand Sword" },
+    { "INVTYPE_WEAPONOFFHAND, ", "" },
+    { "INVTYPE_RANGED, ", "" },
+    { "INVTYPE_SHIELD, ", "" },
+    { "INVTYPE_HOLDABLE, Miscellaneous", "Off Hand" },
+    { "INVTYPE_THROWN, ", "" },
+
+    -- Weapon Type
+    { "INVTYPE_RANGEDRIGHT, Crossbows", "Crossbow" },
+    { "INVTYPE_RANGEDRIGHT, Gun", "Gun" },
+    { "INVTYPE_RANGEDRIGHT, Wands", "Wand" },
+    { "INVTYPE_RELIC, Idols", "Idol" },
+    { "INVTYPE_RELIC, Totem", "Totem" },
+    { "INVTYPE_RELIC, Libram", "Libram" },
+    { "INVTYPE_BAG, Bag", "Bag" },
+    { "INVTYPE_BAG, Soul Bag", "Soul Bag" },
+    { "INVTYPE_AMMO, Junk", "Ammo (Obsolete ),"},
+    { "Axes", "Axe" },
+    { "Bows", "Bow" },
+    { "Daggers", "Dagger" },
+    { "Guns", "Gun" },
+    { "One%-Handed Maces", "One-Handed Mace" },
+    { "Two%-Handed Maces", "Two-Handed Mace" },
+    { "Polearms", "Polearm" },
+    { "Shields", "Shield" },
+    { "Staves", "Staff" },
+    { "One%-Handed Swords", "One-Handed Sword" },
+    { "Two%-Handed Swords", "Two-Handed Sword" },
+    { "Fist Weapons", "Fist Weapon" },
+
+    { "Money", "Currency" },
+    { "Materials", "Reagent" },
+    { "Other", "Misc" },
+    { "Junk", "Misc" },
+    { "%(OBSOLETE%)", ""},
+
+
+    -- Gems
+    { "Red", "Red Gem" },
+    { "Blue", "Blue Gem" },
+    { "Yellow", "Yellow Gem" },
+    { "Purple", "Purple Gem" },
+    { "Orange", "Orange Gem" },
+    { "Green", "Green Gem" },
+
+    { "Herb", "Herbalism" },
+    { "Item Enhancement", "Enchant" },
+    { "Weapon Enchantment", "Enchanting" },
+    { "Armor Enchantment", "Enchanting" },
+    { "Engineering", "Parts" },
+    { "Simple", "Gems" },
+}
+
 function AG:FixText(text)
-    if not string.find(string.lower(text), string.lower("INVTYPE")) then
-        text = gsub(text, ", Leather", "Leather")
-        text = gsub(text, ", Cloth", "Cloth")
+    for _, subTable in pairs (txtSubstitution) do
+        text = gsub(text, subTable[1], subTable[2])
     end
-     -- Body Slot
-     text = gsub(text, "INVTYPE_HEAD", "Head")
-     text = gsub(text, "INVTYPE_NECK, Miscellaneous", "Neck")
-     text = gsub(text, "INVTYPE_SHOULDER", "Shoulder")
-     text = gsub(text, "INVTYPE_CLOAK, Cloth", "Back")
-     text = gsub(text, "INVTYPE_CHEST", "Chest")
-     text = gsub(text, "INVTYPE_BODY", "Shirt")
-     text = gsub(text, "INVTYPE_ROBE", "Chest")
-     text = gsub(text, "INVTYPE_TABARD, Miscellaneous", "Tabard")
-     text = gsub(text, "INVTYPE_WRIST", "Wrist")
-     text = gsub(text, "INVTYPE_HAND", "Hands")
-     text = gsub(text, "INVTYPE_WAIST", "Waist")
-     text = gsub(text, "INVTYPE_LEGS", "Legs")
-     text = gsub(text, "INVTYPE_FEET", "Feet")
-     text = gsub(text, "INVTYPE_FINGER, Miscellaneous", "Ring")
-     text = gsub(text, "INVTYPE_TRINKET, Miscellaneous", "Trinket")
-     text = gsub(text, "INVTYPE_RELIC, Miscellaneous", "Relic")
- 
-     -- Weapon Weilding
-     text = gsub(text, "INVTYPE_WEAPON, ", "")
-     text = gsub(text, "INVTYPE_2HWEAPON, ", "")
-     text = gsub(text, "INVTYPE_WEAPONMAINHAND, ", "")
-     text = gsub(text, "INVTYPE_WEAPONOFFHAND, ", "")
-     text = gsub(text, "INVTYPE_RANGED, ", "")
-     text = gsub(text, "INVTYPE_SHIELD, ", "")
-     text = gsub(text, "INVTYPE_HOLDABLE, Miscellaneous", "Off Hand")
-     text = gsub(text, "INVTYPE_THROWN, ", "") 
- 
-     -- Weapon Type
-     text = gsub(text, "Axes", "Axe")
-     text = gsub(text, "Bows", "Bow")
-     text = gsub(text, "INVTYPE_RANGEDRIGHT, Crossbows", "Crossbow")
-     text = gsub(text, "INVTYPE_RANGEDRIGHT, Gun", "Gun")
-     text = gsub(text, "Daggers", "Dagger")
-     text = gsub(text, "Guns", "Gun")
-     text = gsub(text, "INVTYPE_AMMO, Bullet", "Bullet")
-     text = gsub(text, "INVTYPE_AMMO, Arrow", "Arrow")
-     text = gsub(text, "One%-Handed Maces", "One-Handed Mace")
-     text = gsub(text, "Two%-Handed Maces", "Two-Handed Mace")
-     text = gsub(text, "Polearms", "Polearm")
-     text = gsub(text, "Shields", "Shield")
-     text = gsub(text, "Staves", "Staff")
-     text = gsub(text, "One%-Handed Swords", "One-Handed Sword")
-     text = gsub(text, "Two%-Handed Swords", "Two-Handed Sword")
-     text = gsub(text, "INVTYPE_RANGEDRIGHT, Wands", "Wand")
-     text = gsub(text, "Fist Weapons", "Fist Weapon")
-     text = gsub(text, "INVTYPE_RELIC, Idols", "Idol")
-     text = gsub(text, "INVTYPE_RELIC, Totem", "Totem")
-     text = gsub(text, "INVTYPE_RELIC, Libram", "Libram")
-     text = gsub(text, "INVTYPE_BAG, Bag", "Bag")
-     text = gsub(text, "INVTYPE_BAG, Soul Bag", "Soul Bag")
-     text = gsub(text, "#w21#", "Sigil")
-
-     text = gsub(text, ", Pet", "Pet")
-     text = gsub(text, ", Money", "Currency")
-     text = gsub(text, ", Consumable", "Consumable")
-     text = gsub(text, ", Mount", "Mount")
-     text = gsub(text, ", Quest", "Quest")
-     text = gsub(text, ", Key", "Key")
-     text = gsub(text, ", Book", "Book")
-     text = gsub(text, ", Materials", "Reagent")
-     text = gsub(text, ", Flask", "Flask")
-     text = gsub(text, ", Other", "Misc")
-     text = gsub(text, ", Junk", "Misc")
-     text = gsub(text, "%(OBSOLETE%)", "")
-     text = gsub(text, ", Food & Drink", "Food & Drink")
-     text = gsub(text, ", Parts", "Engineering Parts")
-
-     text = gsub(text, ", Red", "Red Gem")
-     text = gsub(text, ", Blue", "Blue Gem")
-     text = gsub(text, ", Yellow", "Yellow Gem")
-     text = gsub(text, ", Purple", "Purple Gem")
-     text = gsub(text, ", Orange", "Orange Gem")
-     text = gsub(text, ", Green", "Green Gem")
-
-     text = gsub(text, ", Jewelcrafting", "Jewelcrafting")
-     text = gsub(text, ", Enchanting", "Enchanting")
-     text = gsub(text, ", Tailoring", "Tailoring")
-     text = gsub(text, ", Blacksmithing", "Blacksmithing")
-     text = gsub(text, ", Leatherworking", "Leatherworking")
-     text = gsub(text, ", Alchemy", "Alchemy")
-     text = gsub(text, ", Engineering", "Engineering")
-     text = gsub(text, ", Cooking", "Cooking")
-     text = gsub(text, ", Mining", "Mining")
-     text = gsub(text, ", Herbalism", "Herbalism")
-     text = gsub(text, ", Herb", "Herbalism")
-     text = gsub(text, ", Meat", "Meat")
-     text = gsub(text, ", Item Enhancement", "Enchant")
-     text = gsub(text, ", Weapon Enchantment", "Enchanting")
-     text = gsub(text, ", Armor Enchantment", "Enchanting")
-     text = gsub(text, ", Scroll", "Scroll")
-     text = gsub(text, ", Holiday", "Holiday")
-     text = gsub(text, ", Metal & Stone", "Metal & Stone")
-     text = gsub(text, ", Potion", "Potion")
-     text = gsub(text, ", Engineering", "Parts")
-     text = gsub(text, ", Simple", "Gems")
-     text = gsub(text, ", Elemental", "Elemental")
-     text = gsub(text, ", Elixir", "Elixir")
-     text = gsub(text, ", Reagent", "Reagent")
-     text = gsub(text, ", Devices", "Devices")
-     text = gsub(text, ", Trade Goods", "Trade Goods")
      return text
 end

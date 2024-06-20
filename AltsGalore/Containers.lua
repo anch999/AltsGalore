@@ -311,8 +311,15 @@ end
 	self.uiFrame.containerScrollFrame.lable:SetPoint("TOPLEFT", self.uiFrame.containerScrollFrame, 2, 15)
 	self.uiFrame.containerScrollFrame.lable:SetText("Bags")
 
+    function AG:HideContainerRows()
+        for i = 1, MAX_ROWS do
+            self.uiFrame.containerScrollFrame.rows[i]:Hide()
+        end
+    end
+
     local currentDB
 	function AG:ContainerScrollFrameUpdate(db)
+        AG:HideContainerRows()
         if not db and not currentDB then return end
         currentDB = db or currentDB
 		local maxValue = #currentDB
@@ -321,7 +328,7 @@ end
 		for i = 1, MAX_ROWS do
 			local value = i + offset
             local row = self.uiFrame.containerScrollFrame.rows[i]
-			if value <= maxValue then
+			if maxValue ~= 0 and value <= maxValue then
                 if i == 1 then
                     row:SetPoint("TOPLEFT", self.uiFrame.containerScrollFrame, 20, -20)
                 else
@@ -348,12 +355,17 @@ end
                         button:Hide()
                     elseif currentDB[value][num] ~= "EmptySlot" then
                         local item = Item:CreateFromID(currentDB[value][num][1])
-                        item:ContinueOnLoad(function()
-                            local itemData = {GetItemInfo(currentDB[value][num][1])}
+                        local itemData = {self:GetItemInfo(currentDB[value][num][1])}
                             button.itemLink, button.itemTexture, button.quality = itemData[2], itemData[10], itemData[3]
                             button.count = currentDB[value][num][2]
                             SetButton(button)
-                        end)
+                        if not item:GetInfo() then
+                            item:ContinueOnLoad(function()
+                                itemData = {self:GetItemInfo(currentDB[value][num][1])}
+                                button.itemLink = itemData[2]
+                                SetButton(button)
+                            end)
+                        end
                     end
                 end
 				row:Show()
@@ -430,12 +442,12 @@ end
             tinsert(tabInfo, {name = "Bags", icon = BAG_TEXTURE})
             tinsert(tabInfo,{name = "Bank", icon = BANK_BUTTON})
             db = self.personalBanksDB[self.selectedCharacter]
-       
         elseif tab == "realmBankTab" then
             db = self.realmBanksDB["RealmBank"]
         elseif tab == "guildBankTab" then
             db = self.guildBanksDB[self.selectedGuild]
         end
+        if not db then return end
         for _, bag in ipairs(db) do
             if bag then
                 tinsert(tabInfo, {name = bag.name, icon = bag.icon})
@@ -450,7 +462,6 @@ end
     function AG:UpdateTabButtons()
         self.selectedBag[self.selectedTab] = self.selectedBag[self.selectedTab] or 1
         local containerInfo = self:SetContainerSelectionInfo(self.selectedTab)
-        if not containerInfo then return end
         for i = 1, 8 do
             local button = self.uiFrame.tabSelectionFrame.buttons[i]
             button:Hide()

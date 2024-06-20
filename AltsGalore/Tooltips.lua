@@ -247,7 +247,7 @@ local function onSetHyperlink(self, link)
         if quest.RequiredItemId then
             for _, itemID in pairs(quest.RequiredItemId) do
                 if itemID and itemID ~= 0 then
-                    SetTooltip(itemID, tooltip, select(2,GetItemInfo(itemID)))
+                    SetTooltip(itemID, tooltip, select(2,AG:GetItemInfo(itemID)))
                 end
             end
         end
