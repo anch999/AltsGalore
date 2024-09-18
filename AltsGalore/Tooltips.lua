@@ -16,7 +16,7 @@ end
 
 local function CheckTooltipForDuplicate(tooltip, text)
     -- Check if we already added to this tooltip. Happens on the talent frame
-    for i = 1,15 do
+    for i = 1, 30 do
         local frame = _G[tooltip:GetName() .. "TextLeft" .. i]
         local textOld
         if frame then textOld = frame:GetText() end
