@@ -62,7 +62,18 @@ function AG:OnEnable()
     self:RegisterEvent("MERCHANT_UPDATE")
     self:InitializeStorgeDBs()
     self.selectedCharacter = self.thisChar
-    self.realBankSelected = "RealmBank"
+    self.realmBankSelected = "RealmBank"
+
+    C_Hook:Register(AltsGaloreUI, "BANK_PERMISSIONS_PAYLOAD", function()
+        local json = GetJsonCacheData("BANK_PERMISSIONS_PAYLOAD", 0)
+        if json then
+            local jsonObject = C_Serialize:FromJSON(json)
+            if jsonObject then
+                AG.IsPersonalBank = jsonObject.IsPersonalBank
+                AG.IsRealmBank = jsonObject.IsRealmBank
+            end
+        end
+    end)
     if not self.db[self.realm] then self.db[self.realm] = {} end
     if not self.db[self.realm][self.thisChar] then self.db[self.realm][self.thisChar] = {} end
     self.charDB = self.db[self.realm][self.thisChar]
@@ -83,6 +94,16 @@ end
 
 function AG:GUILDBANKFRAME_OPENED()
     wipe(self.numTabs)
+    if HasJsonCacheData("BANK_PERMISSIONS_PAYLOAD", 0) then
+        local json = GetJsonCacheData("BANK_PERMISSIONS_PAYLOAD", 0)
+        if json then
+            local jsonObject = C_Serialize:FromJSON(json)
+            if jsonObject then
+                AG.IsPersonalBank = jsonObject.IsPersonalBank
+                AG.IsRealmBank = jsonObject.IsRealmBank
+            end
+        end
+    end
     self:RegisterEvent("GUILDBANKBAGSLOTS_CHANGED")
 end
 

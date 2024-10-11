@@ -1,4 +1,5 @@
 local AG = LibStub("AceAddon-3.0"):GetAddon("AltsGalore")
+local MAX_GUILDBANK_SLOTS_PER_TAB = 98
 
 function AG:InitializeStorgeDBs()
     AltsGaloreContainersDB = AltsGaloreContainersDB or {}
@@ -94,14 +95,13 @@ local function lastBank(last)
     end
 end
 function AG:GUILDBANKBAGSLOTS_CHANGED()
-    if not GuildBankFrame then return end
     local gBankType, containerType
     
     -- Set what db to save data to
-    if GuildBankFrame.IsPersonalBank then
+    if self.IsPersonalBank then
         gBankType = "personalBanksDB"
         containerType = self.thisChar
-    elseif GuildBankFrame.IsRealmBank then
+    elseif self.IsRealmBank then
         gBankType = "realmBanksDB"
         containerType = "RealmBank"
     elseif self.guild then
@@ -190,7 +190,7 @@ function AG:ContainersTabsCreate()
     local function getChars()
         local containerSettings = {
             containersTab = {self.containersDB, "selectedCharacter", "Character Selection"},
-            realmBankTab = {self.realmBanksDB, "realBankSelected", "RealBank Selection"},
+            realmBankTab = {self.realmBanksDB, "realmBankSelected", "RealBank Selection"},
             guildBankTab = {self.guildBanksDB, "selectedGuild", "Guild Selection"},
         }
         local container = containerSettings[self.selectedTab]
