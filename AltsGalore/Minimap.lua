@@ -21,9 +21,8 @@ function minimap.OnEnter(button)
 end
 
 function AG:ToggleMinimap()
-    local hide = not self.db.minimap
-    self.db.minimap = hide
-    if hide then
+    self.db.minimap = not self.db.minimap
+    if self.db.minimap then
       icon:Hide('AltsGalore')
     else
       icon:Show('AltsGalore')
