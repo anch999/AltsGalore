@@ -162,6 +162,14 @@ function AG:CreateUI()
             editBox:ClearFocus()
         end)
         self.uiFrame.searchbox:SetScript("OnTextChanged", function(editBox)
+            if self.uiFrame.searchbox:GetText() ~= "" then
+                if self.selectedTab ~= "searchTab" then
+                    self.selectedTab = "searchTab"
+                    self:SetFrameTab()
+                end
+                self:FullSearch()
+            end
+
             if editBox:HasFocus() then
                 SearchBoxTemplate_OnTextChanged(editBox)
             end
