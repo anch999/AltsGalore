@@ -180,40 +180,26 @@ function AG:PLAYER_MONEY()
 end
 
 local itemEquipLocConversion = {
-	"INVTYPE_HEAD",
-	"INVTYPE_NECK",
-	"INVTYPE_SHOULDER",
-	"INVTYPE_BODY",
-	"INVTYPE_CHEST",
-	"INVTYPE_WAIST",
-	"INVTYPE_LEGS",
-	"INVTYPE_FEET",
-	"INVTYPE_WRIST",
-	"INVTYPE_HAND",
-	"INVTYPE_FINGER",
-	"INVTYPE_TRINKET",
-	"INVTYPE_WEAPON",
-	"INVTYPE_SHIELD",
-	"INVTYPE_RANGED",
-	"INVTYPE_CLOAK",
-	"INVTYPE_2HWEAPON",
-	"INVTYPE_BAG",
-	"INVTYPE_TABARD",
-	"INVTYPE_ROBE",
-	"INVTYPE_WEAPONMAINHAND",
-	"INVTYPE_WEAPONOFFHAND",
-	"INVTYPE_HOLDABLE",
-	"INVTYPE_AMMO",
-	"INVTYPE_THROWN",
-	"INVTYPE_RANGEDRIGHT",
-	"INVTYPE_QUIVER",
-	"INVTYPE_RELIC",
+	"INVTYPE_HEAD","INVTYPE_NECK","INVTYPE_SHOULDER","INVTYPE_BODY","INVTYPE_CHEST",
+	"INVTYPE_WAIST","INVTYPE_LEGS","INVTYPE_FEET","INVTYPE_WRIST",	"INVTYPE_HAND",
+	"INVTYPE_FINGER","INVTYPE_TRINKET","INVTYPE_WEAPON","INVTYPE_SHIELD","INVTYPE_RANGED",
+	"INVTYPE_CLOAK","INVTYPE_2HWEAPON","INVTYPE_BAG","INVTYPE_TABARD","INVTYPE_ROBE",
+    "INVTYPE_WEAPONMAINHAND","INVTYPE_WEAPONOFFHAND","INVTYPE_HOLDABLE","INVTYPE_AMMO",
+    "INVTYPE_THROWN","INVTYPE_RANGEDRIGHT","INVTYPE_QUIVER","INVTYPE_RELIC",
 }
-function AG:GetItemInfo(itemID)
-	local itemName, itemLink, itemQuality, itemLevel, itemMinLevel, itemType, itemSubType, itemStackCount, itemEquipLoc, itemTexture, itemSellPrice = GetItemInfo(itemID)
-	if not itemName then
-		local item = GetItemInfoInstant(itemID)
-		itemName, itemSubType, itemEquipLoc, itemTexture, itemQuality = item.name, _G["ITEM_SUBCLASS_"..item.classID.."_"..item.subclassID], itemEquipLocConversion[item.inventoryType], item.icon, item.quality
+function AG:GetItemInfo(item)
+	item = tonumber(item) and Item:CreateFromID(item) or Item:CreateFromLink(item)
+	local itemName, itemLink, itemQuality, itemLevel, itemMinLevel, itemType, itemSubType, itemStackCount, itemEquipLoc, itemTexture, itemSellPrice = GetItemInfo(item.itemID)
+	if not item:GetInfo() then
+		local itemInstant = GetItemInfoInstant(item.itemID)
+		if itemInstant then
+			itemName = itemInstant.name
+			itemSubType = _G["ITEM_SUBCLASS_"..itemInstant.classID.."_"..itemInstant.subclassID]
+			itemEquipLoc = itemEquipLocConversion[itemInstant.inventoryType]
+			itemTexture = itemInstant.icon
+			itemQuality = itemInstant.quality
+			itemLink = item:GetLink()
+		end
 	end
 	return itemName, itemLink, itemQuality, itemLevel, itemMinLevel, itemType, itemSubType, itemStackCount, itemEquipLoc, itemTexture, itemSellPrice
 end
