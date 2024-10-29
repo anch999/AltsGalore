@@ -270,7 +270,7 @@ local BANK_BUTTON = "Interface\\Icons\\INV_Box_03"
 local BAG_TEXTURE = "Interface\\Buttons\\Button-Backpack-Up"
 local ROW_HEIGHT = 36   -- How tall is each row?
 local MAX_ROWS = 11      -- How many rows can be shown at once?
-local MAX_COLUMNS = 15
+local MAX_COLUMNS = 14
 
 function AG:SetupContainerTable(db, firstBag, lastBag)
     if not db then return end
@@ -294,38 +294,9 @@ function AG:SetupContainerTable(db, firstBag, lastBag)
     return sorted
 end
 
-
-------------------ScrollFrameTooltips---------------------------
-
-	self.uiFrame.containerScrollFrame = CreateFrame("Frame", "AltsGaloreContainerScrollFrame", self.uiFrame.SelectionScrollFrame)
-	self.uiFrame.containerScrollFrame:EnableMouse(true)
-	self.uiFrame.containerScrollFrame:SetSize((ROW_HEIGHT + 13) * (MAX_COLUMNS), (ROW_HEIGHT + 12) * (MAX_ROWS))
-    self.uiFrame.containerScrollFrame:SetPoint("LEFT", self.uiFrame.SelectionScrollFrame, "RIGHT", 0, 0)
-	self.uiFrame.containerScrollFrame:SetBackdrop({
-		bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background", tile = true, tileSize = 16,
-		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", edgeSize = 16,
-		insets = { left = 4, right = 4, top = 4, bottom = 4 },
-	})
-	self.uiFrame.containerScrollFrame.lable = self.uiFrame.containerScrollFrame:CreateFontString(nil , "BORDER", "GameFontNormal")
-	self.uiFrame.containerScrollFrame.lable:SetJustifyH("LEFT")
-	self.uiFrame.containerScrollFrame.lable:SetPoint("TOPLEFT", self.uiFrame.containerScrollFrame, 2, 15)
-	self.uiFrame.containerScrollFrame.lable:SetText("Bags")
-
-    function AG:HideContainerRows()
+    local function SetGuildBankFrameTypeButtons(MAX_COLUMNS, offset, maxValue, currentDB)
+        local MAX_ROWS = 7
         for i = 1, MAX_ROWS do
-            self.uiFrame.containerScrollFrame.rows[i]:Hide()
-        end
-    end
-
-    local currentDB
-	function AG:ContainerScrollFrameUpdate(db)
-        AG:HideContainerRows()
-        if not db and not currentDB then return end
-        currentDB = db or currentDB
-		local maxValue = #currentDB
-		FauxScrollFrame_Update(self.uiFrame.containerScrollFrame.scrollBar, maxValue, MAX_ROWS, ROW_HEIGHT)
-		local offset = FauxScrollFrame_GetOffset(self.uiFrame.containerScrollFrame.scrollBar)
-		for i = 1, MAX_ROWS do
 			local value = i + offset
             local row = self.uiFrame.containerScrollFrame.rows[i]
 			if maxValue ~= 0 and value <= maxValue then
@@ -373,6 +344,93 @@ end
                 row:Hide()
 			end
 		end
+    end
+------------------ScrollFrameTooltips---------------------------
+
+	self.uiFrame.containerScrollFrame = CreateFrame("Frame", "AltsGaloreContainerScrollFrame", self.uiFrame.SelectionScrollFrame)
+	self.uiFrame.containerScrollFrame:EnableMouse(true)
+	self.uiFrame.containerScrollFrame:SetSize((ROW_HEIGHT + 13) * (MAX_COLUMNS), (ROW_HEIGHT + 12) * (MAX_ROWS))
+    self.uiFrame.containerScrollFrame:SetPoint("LEFT", self.uiFrame.SelectionScrollFrame, "RIGHT", 0, 0)
+	self.uiFrame.containerScrollFrame:SetBackdrop({
+		bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background", tile = true, tileSize = 16,
+		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", edgeSize = 16,
+		insets = { left = 4, right = 4, top = 4, bottom = 4 },
+	})
+	self.uiFrame.containerScrollFrame.lable = self.uiFrame.containerScrollFrame:CreateFontString(nil , "BORDER", "GameFontNormal")
+	self.uiFrame.containerScrollFrame.lable:SetJustifyH("LEFT")
+	self.uiFrame.containerScrollFrame.lable:SetPoint("TOPLEFT", self.uiFrame.containerScrollFrame, 2, 15)
+	self.uiFrame.containerScrollFrame.lable:SetText("Bags")
+
+    function AG:HideContainerRows()
+        for i = 1, MAX_ROWS do
+            self.uiFrame.containerScrollFrame.rows[i]:Hide()
+        end
+    end
+
+    local currentDB
+	function AG:ContainerScrollFrameUpdate(db)
+        AG:HideContainerRows()
+        if not db and not currentDB then return end
+        currentDB = db or currentDB
+        local isGuildBankType
+        if self.selectedTab == "realmBankTab" or self.selectedTab == "guildBankTab" or (self.selectedBag[self.selectedTab] >= 3 and self.selectedTab == "containersTab") then
+            isGuildBankType = true
+        end
+		local maxValue = #currentDB
+		FauxScrollFrame_Update(self.uiFrame.containerScrollFrame.scrollBar, maxValue, MAX_ROWS, ROW_HEIGHT)
+		local offset = FauxScrollFrame_GetOffset(self.uiFrame.containerScrollFrame.scrollBar)
+        if isGuildBankType then
+            SetGuildBankFrameTypeButtons(MAX_ROWS, MAX_COLUMNS, offset, maxValue, currentDB)
+        else
+            for i = 1, MAX_ROWS do
+                local value = i + offset
+                local row = self.uiFrame.containerScrollFrame.rows[i]
+                if maxValue ~= 0 and value <= maxValue then
+                    if i == 1 then
+                        row:SetPoint("TOPLEFT", self.uiFrame.containerScrollFrame, 20, -20)
+                    else
+                        row:SetPoint("BOTTOM", self.uiFrame.containerScrollFrame.rows[i-1], 0, -45)
+                    end
+                    for num = 1, MAX_COLUMNS do
+                        local button = self.uiFrame.containerScrollFrame.rows[i]["button"..num]
+                        local function SetButton(button)
+                            _G[button:GetName().."IconTexture"]:SetSize(ROW_HEIGHT,ROW_HEIGHT)
+                            _G[button:GetName().."IconTexture"]:SetAllPoints(button)
+                            SetItemButtonTexture(button, button.itemTexture)
+                            SetItemButtonQuality(button, button.quality)
+                            SetItemButtonCount(button, button.count)
+                        end
+                        if num == 1 then
+                            button:SetPoint("LEFT", row, 0, 0)
+                        else
+                            button:SetPoint("LEFT", self.uiFrame.containerScrollFrame.rows[i]["button"..num-1], "RIGHT", 10, 0)
+                        end
+                        button:Show()
+                        button.itemTexture, button.count, button.quality, button.itemLink = EMPTY_SLOT, nil, nil, nil
+                        SetButton(button)
+                        if not currentDB[value][num] then
+                            button:Hide()
+                        elseif currentDB[value][num] ~= "EmptySlot" then
+                            local item = Item:CreateFromID(currentDB[value][num][1])
+                            local itemData = {self:GetItemInfo(currentDB[value][num][1])}
+                                button.itemLink, button.itemTexture, button.quality = itemData[2], itemData[10], itemData[3]
+                                button.count = currentDB[value][num][2]
+                                SetButton(button)
+                            if not item:GetInfo() then
+                                item:ContinueOnLoad(function()
+                                    itemData = {self:GetItemInfo(currentDB[value][num][1])}
+                                    button.itemLink = itemData[2]
+                                    SetButton(button)
+                                end)
+                            end
+                        end
+                    end
+                    row:Show()
+                else
+                    row:Hide()
+                end
+            end
+        end
 	end
 
 	self.uiFrame.containerScrollFrame.scrollBar = CreateFrame("ScrollFrame", "AltsGaloreContainerScrollFrameScrollBar", self.uiFrame.containerScrollFrame, "FauxScrollFrameTemplate")
@@ -445,7 +503,7 @@ end
         elseif tab == "realmBankTab" then
             db = self.realmBanksDB["RealmBank"]
         elseif tab == "guildBankTab" then
-            db = self.guildBanksDB[self.selectedGuild]
+            db = self.guildBanksDB[self.selectedGuild] or nil
         end
         if not db then return end
         for _, bag in ipairs(db) do
