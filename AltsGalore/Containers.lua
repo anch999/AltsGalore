@@ -215,7 +215,8 @@ function AG:ContainersTabsCreate()
 			self.uiFrame.SelectionScrollFrame.rows[i]:SetChecked(false)
 			if value <= maxValue then
 				local row = self.uiFrame.SelectionScrollFrame.rows[i]
-                row.Text:SetText(charList[value])
+                local classColor = self.realmDB[charList[value]] and self.realmDB[charList[value]].class and self:GetClassColor(self.realmDB[charList[value]].class) or ""
+                row.Text:SetText(classColor..charList[value])
 				row:SetScript("OnClick", function()
                     self[selection] = charList[value]
                     self.uiFrame.characterSelect:SetText(self[selection])
@@ -294,12 +295,11 @@ function AG:SetupContainerTable(db, firstBag, lastBag)
     return sorted
 end
 
-    local function SetGuildBankFrameTypeButtons(MAX_COLUMNS, offset, maxValue, currentDB)
-        local MAX_ROWS = 7
+    local function SetGuildBankFrameTypeButtons(MAX_ROWS, MAX_COLUMNS, offset, maxValue, currentDB)
         for i = 1, MAX_ROWS do
-			local value = i + offset
+            local value = i + offset
             local row = self.uiFrame.containerScrollFrame.rows[i]
-			if maxValue ~= 0 and value <= maxValue then
+            if maxValue ~= 0 and value <= maxValue then
                 if i == 1 then
                     row:SetPoint("TOPLEFT", self.uiFrame.containerScrollFrame, 20, -20)
                 else
@@ -339,11 +339,11 @@ end
                         end
                     end
                 end
-				row:Show()
+                row:Show()
             else
                 row:Hide()
-			end
-		end
+            end
+        end
     end
 ------------------ScrollFrameTooltips---------------------------
 
@@ -367,11 +367,12 @@ end
         end
     end
 
+
     local currentDB
 	function AG:ContainerScrollFrameUpdate(db)
-        AG:HideContainerRows()
-        if not db and not currentDB then return end
+        self:HideContainerRows()
         currentDB = db or currentDB
+        if not currentDB then return end
         local isGuildBankType
         if self.selectedTab == "realmBankTab" or self.selectedTab == "guildBankTab" or (self.selectedBag[self.selectedTab] >= 3 and self.selectedTab == "containersTab") then
             isGuildBankType = true
@@ -380,7 +381,7 @@ end
 		FauxScrollFrame_Update(self.uiFrame.containerScrollFrame.scrollBar, maxValue, MAX_ROWS, ROW_HEIGHT)
 		local offset = FauxScrollFrame_GetOffset(self.uiFrame.containerScrollFrame.scrollBar)
         if isGuildBankType then
-            SetGuildBankFrameTypeButtons(MAX_ROWS, MAX_COLUMNS, offset, maxValue, currentDB)
+           SetGuildBankFrameTypeButtons(MAX_ROWS, MAX_COLUMNS, offset, maxValue, currentDB)
         else
             for i = 1, MAX_ROWS do
                 local value = i + offset
@@ -459,6 +460,7 @@ end
 
 	self.uiFrame.containerScrollFrame.rows = rows
 
+    -----------------------------------------------Tab Selection-----------------------------------------------
     self.uiFrame.tabSelectionFrame = CreateFrame("Frame", "AltsGaloreTabSelectionFrame", self.uiFrame.containerScrollFrame)
     self.uiFrame.tabSelectionFrame:EnableMouse(true)
     self.uiFrame.tabSelectionFrame:SetSize(176, self.uiFrame.containerScrollFrame:GetHeight())
@@ -490,7 +492,7 @@ end
         button:SetCheckedTexture("Interface\\QuestFrame\\UI-QuestTitleHighlight", "ADD")
         button:SetHighlightTexture("Interface\\QuestFrame\\UI-QuestTitleHighlight", "ADD")
     end
-
+    -----------------------------------------------------------------------------------------------------------
     self.uiFrame.SelectionScrollFrame:SetSize(150, self.uiFrame.containerScrollFrame:GetHeight())
 
     function AG:SetContainerSelectionInfo(tab)

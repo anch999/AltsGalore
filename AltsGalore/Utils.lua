@@ -31,6 +31,14 @@ function AG:IsRealmbound(bag, slot)
     return false
 end
 
+function AG:GetClassColor(classFilename)
+	local color = RAID_CLASS_COLORS[classFilename];
+	if color then
+        return ""
+		--return format("|c%.2x%.2x%.2x%.2x", 0, color.r, color.g, color.b)
+	end
+end
+
 -- returns true, if player has item with given ID in inventory or bags and it's not on cooldown
 function AG:HasItem(itemID)
 	local item, found, id

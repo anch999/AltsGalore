@@ -235,6 +235,7 @@ local function TooltipHandlerItem(tooltip)
 end
 
 GameTooltip:HookScript("OnTooltipSetItem", TooltipHandlerItem)
+ItemRefTooltip:HookScript("OnTooltipSetItem", TooltipHandlerItem)
 
 -- quest hyperlink handler
 local function onSetHyperlink(self, link)

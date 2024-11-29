@@ -51,10 +51,10 @@ function AG:OnEnable()
     if not self.db[self.realm][self.thisChar] then self.db[self.realm][self.thisChar] = {} end
     self.charDB = self.db[self.realm][self.thisChar]
     self.realmDB = self.db[self.realm]
+    _, self.charDB.class = UnitClass("player")
     self.uiFrame.characterSelect:SetText(self.selectedCharacter)
     self:UpdateCurrencyDB()
     self:CreateOptionsUI()
-    --self.standaloneButton:SetScale(self.db.buttonScale or 1)
     --Add the AltsGalore to the special frames tables to enable closing wih the ESC key
 	tinsert(UISpecialFrames, "AltsGaloreUI")
 end

@@ -1,15 +1,71 @@
-local MAJOR, MINOR = "SettingsCreater-1.0", 4
+local MAJOR, MINOR = "SettingsCreater-1.0", 6
+local SettingsCreater, oldminor = LibStub:NewLibrary(MAJOR, MINOR)
 
-if not AceLibrary then error(MAJOR .. " requires AceLibrary") end
-if not AceLibrary:IsNewVersion(MAJOR, MINOR) then return end
-
-local SettingsCreater = {}
+if not SettingsCreater then return end -- No Upgrade needed.
 
 --Round number
 local function round(num, idp)
 	local mult = 10 ^ (idp or 0)
 	return math.floor(num * mult + 0.5) / mult
- end
+end
+
+local function InitializeDropDown(self)
+    local options, opTable, db = unpack(self.Menu)
+	local info, otherDB
+    local frame = options[opTable.Name]
+    if type(opTable.Menu) == "function" then
+        opTable.MenuList, otherDB = opTable.Menu()
+    else
+        opTable.MenuList = opTable.Menu
+    end
+    if not opTable.MenuList then return end
+    db = otherDB or db[opTable.Name]
+	for i, menu in pairs(opTable.MenuList) do
+		info = {
+			text = menu;
+			func = function()
+                if opTable.Func then
+                    opTable.Func(menu)
+                end
+                db = menu
+                UIDropDownMenu_SetSelectedID(frame, i)
+			end;
+		}
+        UIDropDownMenu_AddButton(info)
+        if menu == db then
+		    UIDropDownMenu_SetSelectedID(frame, i)
+        end
+	end
+	UIDropDownMenu_SetWidth(frame, opTable.menuWidth or 150)
+end
+
+local function SetGameTooltip(frame, text)
+    GameTooltip:SetOwner(frame, "ANCHOR_TOPLEFT")
+    GameTooltip:ClearLines()
+    GameTooltip:AddLine(text)
+    GameTooltip:Show()
+end
+
+local function SetOnLeave(options, frame, addonName, db, opTable)
+    if opTable.OnLeave then
+        opTable.OnLeave()
+    end
+    GameTooltip:Hide()
+end
+
+local function SetOnEnter(options, frame, addonName, db, opTable)
+    if opTable.Tooltip then
+        SetGameTooltip(options[opTable.Name], opTable.Tooltip)
+    elseif opTable.Lable then
+        SetGameTooltip(options[opTable.Name], opTable.Lable)
+    end
+    if opTable.OnEnter then opTable.OnEnter() end
+end
+
+--Hook interface frame show to update options data
+InterfaceOptionsFrame:HookScript("OnShow", function()
+	if InterfaceOptionsFrame:GetWidth() < 850 then InterfaceOptionsFrame:SetWidth(850) end
+end)
 
 --[[ DB = Name of the db you want to setup
 CheckBox = Global name of the checkbox if it has one and first numbered table entry is the boolean
@@ -52,9 +108,9 @@ local function CreateCheckButton(options, db, frame, addonName, setPoint, opTabl
     options[opTable.Name].Lable:SetPoint("LEFT", 30, 0)
     options[opTable.Name].Lable:SetText(opTable.Lable)
     options[opTable.Name]:SetScript("OnClick", opTable.OnClick)
-    options[opTable.Name]:SetScript("OnEnter", opTable.Tooltip or opTable.OnEnter)
-    options[opTable.Name]:SetScript("OnLeave", opTable.OnLeave or GameTooltip:Hide())
-    options[opTable.Name]:SetScript("OnShow", opTable.OnShow)
+    options[opTable.Name]:SetScript("OnEnter", function() SetOnEnter(options, frame, addonName, db, opTable) end)
+    options[opTable.Name]:SetScript("OnLeave", function() SetOnLeave(options, frame, addonName, db, opTable) end)
+    options[opTable.Name]:SetScript("OnShow", function() if opTable.OnShow then opTable.OnShow(options[opTable.Name]) end end)
     options[opTable.Name]:SetChecked(db[opTable.Name] or false)
     return options[opTable.Name]
 end
@@ -65,11 +121,12 @@ local function CreateButton(options, db, frame, addonName, setPoint, opTable)
     options[opTable.Name]:SetPoint(unpack(setPoint))
     options[opTable.Name]:SetText(opTable.Lable)
     options[opTable.Name]:SetScript("OnClick", opTable.OnClick)
-    options[opTable.Name]:SetScript("OnShow", opTable.OnShow)
-    options[opTable.Name]:SetScript("OnEnter", opTable.Tooltip or opTable.OnEnter)
-    options[opTable.Name]:SetScript("OnLeave", opTable.OnLeave or GameTooltip:Hide())
+    options[opTable.Name]:SetScript("OnEnter", function() SetOnEnter(options, frame, addonName, db, opTable) end)
+    options[opTable.Name]:SetScript("OnLeave", function() SetOnLeave(options, frame, addonName, db, opTable) end)
     return options[opTable.Name]
 end
+
+local dropDownList = {}
 
 local function CreateDropDownMenu(options, db, frame, addonName, setPoint, opTable)
     options[opTable.Name] = CreateFrame("Button", addonName.."Options"..opTable.Name.."Menu", frame, "UIDropDownMenuTemplate")
@@ -79,11 +136,25 @@ local function CreateDropDownMenu(options, db, frame, addonName, setPoint, opTab
     options[opTable.Name].Lable:SetPoint("LEFT", options[opTable.Name], 190, 0)
     options[opTable.Name].Lable:SetText(opTable.Lable)
     options[opTable.Name]:SetScript("OnClick", opTable.OnClick)
-    options[opTable.Name]:SetScript("OnShow", opTable.OnShow)
-    options[opTable.Name]:SetScript("OnEnter", opTable.Tooltip or opTable.OnEnter)
-    options[opTable.Name]:SetScript("OnLeave", opTable.OnLeave or GameTooltip:Hide())
-    options[opTable.Name].Menu = opTable.Menu
+    options[opTable.Name]:SetScript("OnEnter", function() SetOnEnter(options, frame, addonName, db, opTable) end)
+    options[opTable.Name]:SetScript("OnLeave", function() SetOnLeave(options, frame, addonName, db, opTable) end)
+    options[opTable.Name].Menu = { options, opTable, db }
+    options[opTable.Name]:SetScript("OnShow", function() UIDropDownMenu_Initialize(options[opTable.Name], InitializeDropDown) end )
+    options[opTable.Name].updateMenu = function() UIDropDownMenu_Initialize(options[opTable.Name], InitializeDropDown) end
+    dropDownList[addonName] = dropDownList[addonName] or {}
+    if opTable.Menu then
+        tinsert(dropDownList[addonName], options[opTable.Name])
+    end
     return options[opTable.Name]
+end
+
+function SettingsCreater:UpdateDropDownMenus(addonName)
+    if not addonName then return end
+    for _, frame in pairs(dropDownList[addonName]) do
+        if frame then
+            UIDropDownMenu_Initialize(frame, InitializeDropDown)
+        end
+    end
 end
 
 local function CreateSlider(options, db, frame, addonName, setPoint, opTable)
@@ -91,7 +162,6 @@ local function CreateSlider(options, db, frame, addonName, setPoint, opTable)
     options[opTable.Name]:SetPoint(unpack(setPoint))
     options[opTable.Name]:SetSize(unpack(opTable.Size))
     options[opTable.Name]:SetMinMaxValues(opTable.MinMax[1], opTable.MinMax[2])
-    options[opTable.Name]:SetScript("OnShow", opTable.OnShow)
     _G[options[opTable.Name]:GetName().."Text"]:SetText(opTable.Lable)
     _G[options[opTable.Name]:GetName().."Low"]:SetText(opTable.MinMax[1])
     _G[options[opTable.Name]:GetName().."High"]:SetText(opTable.MinMax[2])
@@ -99,6 +169,9 @@ local function CreateSlider(options, db, frame, addonName, setPoint, opTable)
         opTable.OnValueChanged(slider)
         options[opTable.Name].editBox:SetText(round(options[opTable.Name]:GetValue(),2))
     end)
+    options[opTable.Name].UpdateSlider = function(value)
+        options[opTable.Name]:SetValue(value)
+    end
     options[opTable.Name]:SetScript("OnShow", opTable.OnShow)
     options[opTable.Name]:SetValueStep(opTable.Step)
     options[opTable.Name].editBox = CreateFrame("EditBox", addonName.."Options"..opTable.Name.."SliderInputBox", options[opTable.Name], "InputBoxTemplate2")
@@ -108,6 +181,8 @@ local function CreateSlider(options, db, frame, addonName, setPoint, opTable)
     options[opTable.Name].editBox:SetScript("OnEnterPressed", function()
         options[opTable.Name]:SetValue(round(options[opTable.Name].editBox:GetText(),2))
     end)
+    options[opTable.Name]:SetScript("OnEnter", function() SetOnEnter(options, frame, addonName, db, opTable) end)
+    options[opTable.Name]:SetScript("OnLeave", function() SetOnLeave(options, frame, addonName, db, opTable) end)
     return options[opTable.Name]
 end
 
@@ -119,11 +194,10 @@ local function CreateInputBox(options, db, frame, addonName, setPoint, opTable)
     options[opTable.Name].Lable:SetJustifyH("LEFT")
     options[opTable.Name].Lable:SetPoint("BOTTOMLEFT", options[opTable.Name], "TOPLEFT", 0, 0)
     options[opTable.Name].Lable:SetText(opTable.Lable)
-    options[opTable.Name]:SetScript("OnEnter", opTable.Tooltip or opTable.OnEnter)
-    options[opTable.Name]:SetScript("OnLeave", opTable.OnLeave or GameTooltip:Hide())
+    options[opTable.Name]:SetScript("OnEnter", function() SetOnEnter(options, frame, addonName, db, opTable) end)
+    options[opTable.Name]:SetScript("OnLeave", function() SetOnLeave(options, frame, addonName, db, opTable) end)
     options[opTable.Name]:SetScript("OnTextChanged", opTable.OnTextChanged)
     options[opTable.Name]:SetScript("OnEnterPressed", opTable.OnEnterPressed)
-    options[opTable.Name]:SetScript("OnShow", opTable.OnShow)
     return options[opTable.Name]
 end
 
@@ -205,24 +279,26 @@ function SettingsCreater:CreateOptionsPages(data, db)
     return options
 end
 
+-- ---------------------------------------------------------------------
+-- Embed handling
+
 local mixins = {
 	"SetupDB",
 	"CreateOptionsPages",
+    "UpdateDropDownMenus",
 }
 
 SettingsCreater.embeds = SettingsCreater.embeds or {}
 
 function SettingsCreater:Embed(target)
+    self.embeds[target] = true
 	for _, v in pairs(mixins) do
 		target[v] = self[v]
 	end
-	self.embeds[target] = true
 	return target
 end
 
 -- Update embeds
-for target, _ in pairs(SettingsCreater.embeds) do
-	SettingsCreater:Embed(target)
+for addon, _ in pairs(SettingsCreater.embeds) do
+	SettingsCreater:Embed(addon)
 end
-
-AceLibrary:Register(SettingsCreater, MAJOR, MINOR)
