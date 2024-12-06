@@ -52,11 +52,8 @@ function AG:OnEnable()
     self.charDB = self.db[self.realm][self.thisChar]
     self.realmDB = self.db[self.realm]
     _, self.charDB.class = UnitClass("player")
-    self.uiFrame.characterSelect:SetText(self.selectedCharacter)
     self:UpdateCurrencyDB()
     self:CreateOptionsUI()
-    --Add the AltsGalore to the special frames tables to enable closing wih the ESC key
-	tinsert(UISpecialFrames, "AltsGaloreUI")
 end
 
 function AG:GUILD_ROSTER_UPDATE()

@@ -28,15 +28,9 @@ function AG:CreateUI()
             self.uiFrame:StopMovingOrSizing()
         end)
 
-        --Character Select Button
-        self.uiFrame.characterSelect = CreateFrame("Button", "AltsGaloreCharacterSelect", self.uiFrame, "AltsGaloreDropMenuTemplate")
-        self.uiFrame.characterSelect:SetSize(150,25)
-        self.uiFrame.characterSelect:SetPoint("TOPLEFT", self.uiFrame,60,-60)
-        self.uiFrame.characterSelect.Lable:SetText("Select Character")
-        self.uiFrame.characterSelect:SetScript("OnClick", function(button)
-            self:DewdropRegister(button)
-        end)
-        self.uiFrame.characterSelect:Hide()
+        --Add the AltsGalore to the special frames tables to enable closing wih the ESC key
+	    tinsert(UISpecialFrames, "AltsGaloreUI")
+        
         self.selectedTab = "summaryTab"
         self.uiFrame.tabList = {}
          -------------------First Tab Frame-------------------
