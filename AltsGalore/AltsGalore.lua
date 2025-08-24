@@ -1,4 +1,4 @@
-local AG = LibStub("AceAddon-3.0"):NewAddon("AltsGalore", "AceTimer-3.0", "AceEvent-3.0", "SettingsCreater-1.0")
+local AG = LibStub("AceAddon-3.0"):NewAddon("AltsGalore", "AceTimer-3.0", "AceEvent-3.0", "SettingsCreator-1.0")
 ALTSGALORE = AG
 AG.dewdrop = AceLibrary("Dewdrop-2.0")
 AG.Version = 1
@@ -9,7 +9,7 @@ AG.defaultIcon = "Interface\\Icons\\INV_Misc_Book_06"
 
 --Set Savedvariables defaults
 local DefaultSettings  = {
-    minimap         = { false },
+    minimap         = false,
     txtSize         = 12,
     detailedGuildBankCount = false,
 }

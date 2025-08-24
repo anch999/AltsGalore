@@ -149,7 +149,9 @@ local realmWideCurrencyIDs = {
         [90004] = true,     -- Token of Prestige
         [98463] = true,     -- Mystic Extracts
         [97397] = true,     -- Seasonal Points
-        [1008000] = true,   -- Season's Achievement     
+        [1008000] = true,   -- Season's Achievement
+        [1297307] = true,   -- Bedlam Bullion
+        [1297308] = true,   -- Bonzo Bolts
 }
 
 function AG:UpdateCurrencyDB()

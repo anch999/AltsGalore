@@ -213,7 +213,6 @@ function AG:DewdropRegister(button)
                     'text', name,
                     'func', function()
                         self.selectedCharacter = name
-                        self.uiFrame.characterSelect:SetText(self.selectedCharacter)
                         self:SetScrollFrame()
                     end,
                     'textHeight', self.db.txtSize,

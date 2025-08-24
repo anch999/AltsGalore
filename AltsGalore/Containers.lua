@@ -219,7 +219,6 @@ function AG:ContainersTabsCreate()
                 row.Text:SetText(classColor..charList[value])
 				row:SetScript("OnClick", function()
                     self[selection] = charList[value]
-                    self.uiFrame.characterSelect:SetText(self[selection])
                     self.selectedBag[self.selectedTab] = 1
                     self:UpdateTabButtons()
                     self:SetScrollFrame()
@@ -445,7 +444,7 @@ end
 		self:ContainerScrollFrameUpdate()
 	end)
 
-	local rows = setmetatable({}, { __index = function(t, i)
+	self.uiFrame.containerScrollFrame.rows = setmetatable({}, { __index = function(t, i)
         local row = CreateFrame("Frame", "$parentRow"..i, self.uiFrame.containerScrollFrame)
         row:SetSize(ROW_HEIGHT * MAX_COLUMNS + 0.5, ROW_HEIGHT)
 		for num = 1, MAX_COLUMNS do
@@ -458,7 +457,7 @@ end
 		return row
 	end })
 
-	self.uiFrame.containerScrollFrame.rows = rows
+	--self.uiFrame.containerScrollFrame.rows = rows
 
     -----------------------------------------------Tab Selection-----------------------------------------------
     self.uiFrame.tabSelectionFrame = CreateFrame("Frame", "AltsGaloreTabSelectionFrame", self.uiFrame.containerScrollFrame)

@@ -245,6 +245,7 @@ local function onSetHyperlink(self, link)
     if not type or not id then return end
     if type == "quest" then
         local quest = GetQuestTemplate(id)
+        if not quest then return end
         if quest.RequiredItemId then
             for _, itemID in pairs(quest.RequiredItemId) do
                 if itemID and itemID ~= 0 then
