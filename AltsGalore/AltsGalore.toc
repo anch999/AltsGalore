@@ -8,6 +8,6 @@
 ## X-Category: UnitFrame
 ## X-OptionsFrame: AltsGaloreOptionsFrame
 ## DefaultState: enabled
-## Version: 1.0.0
+## Version: 1.0.1
 
 embeds.xml
