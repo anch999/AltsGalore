@@ -245,6 +245,7 @@ secureFrame:SetScript("OnLeave",
 
 secureFrame:HookScript("OnClick",
 	function(this , buttonClick)
+		if not this then return end
 		local realthis = this
 		this = this.owner
 		if not this then return end

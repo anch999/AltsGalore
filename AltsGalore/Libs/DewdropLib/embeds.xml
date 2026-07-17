@@ -2,5 +2,5 @@
 ..\FrameXML\UI.xsd">
 
 <Script file="AceLibrary\AceLibrary.lua"/>
-
+<Script file="Dewdrop-2.0\Dewdrop-2.0.lua"/>
 </Ui>
