@@ -191,7 +191,7 @@ end
 -- Used to create a dewdrop menus from tables
 function Utils:OpenDewdropMenu(frame, menuList, ...)
 	if self.Dewdrop:IsOpen(frame) then self.Dewdrop:Close() return end
-	local textSize = AtlasLoot.selectedProfile.txtSize or 12
+	local textSize = self.db.txtSize or 12
 	local menuTables = {...}
 	if #menuTables > 0 then
 		-- if more then 1 table is sent combine them into 1 table
