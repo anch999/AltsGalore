@@ -118,7 +118,7 @@ function AG:GUILDBANKBAGSLOTS_CHANGED()
         db[tab] = {name = name, icon = icon, numSlots = MAX_GUILDBANK_SLOTS_PER_TAB}
 
         for slot = 1, MAX_GUILDBANK_SLOTS_PER_TAB do
-            local itemID = self:GetItemIdFromLink(GetGuildBankItemLink(tab, slot))
+            local itemID = GetItemInfoFromHyperlink(GetGuildBankItemLink(tab, slot))
             local itemCount = select(2, GetGuildBankItemInfo(tab,slot))
             if itemID then
                 db[tab][slot] = {itemID, itemCount}
