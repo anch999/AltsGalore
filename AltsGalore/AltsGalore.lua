@@ -1,4 +1,4 @@
-local AG = LibStub("AceAddon-3.0"):NewAddon("AltsGalore", "AceTimer-3.0", "AceEvent-3.0", "SettingsCreator-1.0")
+local AG = LibStub("AceAddon-3.0"):NewAddon("AltsGalore", "NewsFrame-1.0", "AceTimer-3.0", "AceEvent-3.0", "SettingsCreator-1.0")
 ALTSGALORE = AG
 AG.dewdrop = AceLibrary("Dewdrop-2.0")
 AG.Version = 1
@@ -54,6 +54,7 @@ function AG:OnEnable()
     _, self.charDB.class = UnitClass("player")
     self:UpdateCurrencyDB()
     self:CreateOptionsUI()
+    self:PatchNotes()
 end
 
 function AG:GUILD_ROSTER_UPDATE()
@@ -111,4 +112,12 @@ function AG:SlashCommand(msg)
     else
         self:UiOnShow()
     end
+end
+
+local patchNotes = {
+    {"Version  1.0.0", "1st November, 2025"},
+    "",
+}
+function AG:PatchNotes()
+    self:InitializeNewsFrame(self.db, patchNotes, "AltsGalore")
 end
