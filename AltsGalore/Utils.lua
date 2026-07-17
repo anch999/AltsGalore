@@ -1,4 +1,4 @@
-local AG = LibStub("AceAddon-3.0"):GetAddon("AltsGalore")
+local Utils = LibStub("AceAddon-3.0"):GetAddon("AltsGalore")
 local CYAN =  "|cff00ffff"
 local WHITE = "|cffFFFFFF"
 local LIMEGREEN = "|cFF32CD32"
@@ -6,18 +6,9 @@ local ORANGE= "|cFFFFA500"
 local AQUA  = "|cFF00FFFF"
 local GREEN  = "|cff00ff00"
 
-
-local function GetTipAnchor(frame)
-    local x, y = frame:GetCenter()
-    if not x or not y then return 'TOPLEFT', 'BOTTOMLEFT' end
-    local hhalf = (x > UIParent:GetWidth() * 2 / 3) and 'RIGHT' or (x < UIParent:GetWidth() / 3) and 'LEFT' or ''
-    local vhalf = (y > UIParent:GetHeight() / 2) and 'TOP' or 'BOTTOM'
-    return vhalf .. hhalf, frame, (vhalf == 'TOP' and 'BOTTOM' or 'TOP') .. hhalf
-end
-
 local cTip = CreateFrame("GameTooltip","cTooltip",nil,"GameTooltipTemplate")
 
-function AG:IsRealmbound(bag, slot)
+function Utils:IsRealmbound(bag, slot)
     cTip:SetOwner(UIParent, "ANCHOR_NONE")
     cTip:SetBagItem(bag, slot)
     cTip:Show()
@@ -31,7 +22,7 @@ function AG:IsRealmbound(bag, slot)
     return false
 end
 
-function AG:GetClassColor(classFilename)
+function Utils:GetClassColor(classFilename)
 	local color = RAID_CLASS_COLORS[classFilename];
 	if color then
         return ""
@@ -40,7 +31,7 @@ function AG:GetClassColor(classFilename)
 end
 
 -- returns true, if player has item with given ID in inventory or bags and it's not on cooldown
-function AG:HasItem(itemID)
+function Utils:HasItem(itemID)
 	local item, found, id
 	-- scan bags
 	for bag = 0, 4 do
@@ -57,7 +48,7 @@ function AG:HasItem(itemID)
 	return false
 end
 
-function AG:ItemTemplate_OnEnter(button)
+function Utils:ItemTemplate_OnEnter(button)
     self.shiftKeyDown = false
     if not button.itemLink then return end
     if IsShiftKeyDown() then
@@ -68,25 +59,12 @@ function AG:ItemTemplate_OnEnter(button)
     GameTooltip:Show()
 end
 
-function AG:ItemTemplate_OnLeave()
+function Utils:ItemTemplate_OnLeave()
     self.shiftKeyDown = false
     GameTooltip:Hide()
 end
 
---for a adding a divider to dew drop menus 
-function AG:AddDividerLine(maxLenght)
-    local text = WHITE.."----------------------------------------------------------------------------------------------------"
-    AG.dewdrop:AddLine(
-        'text' , text:sub(1, maxLenght),
-        'textHeight', self.db.txtSize,
-        'textWidth', self.db.txtSize,
-        'isTitle', true,
-        "notCheckable", true
-    )
-    return true
-end
-
-function AG:GetTipAnchor(frame)
+function Utils:GetTipAnchor(frame)
     local x, y = frame:GetCenter()
     if not x or not y then return 'TOPLEFT', 'BOTTOMLEFT' end
     local hhalf = (x > UIParent:GetWidth() * 2 / 3) and 'RIGHT' or (x < UIParent:GetWidth() / 3) and 'LEFT' or ''
@@ -94,19 +72,19 @@ function AG:GetTipAnchor(frame)
     return vhalf .. hhalf, frame, (vhalf == 'TOP' and 'BOTTOM' or 'TOP') .. hhalf
 end
 
-function AG:OnEnter(button, show)
+function Utils:OnEnter(button, show)
     if self.db.autoMenu and not UnitAffectingCombat("player") then
-        self:DewdropRegister(button, show)
+        --self:DewdropRegister(button, show)
     else
         GameTooltip:SetOwner(button, 'ANCHOR_NONE')
-        GameTooltip:SetPoint(AG:GetTipAnchor(button))
+        GameTooltip:SetPoint(self:GetTipAnchor(button))
         GameTooltip:ClearLines()
         GameTooltip:AddLine("AltsGalore")
         GameTooltip:Show()
     end
 end
 
-function AG:PairsByKeys(t, reverse)
+function Utils:PairsByKeys(t, reverse)
     local function order(a, b)
         if reverse then
             return a > b
@@ -132,14 +110,9 @@ function AG:PairsByKeys(t, reverse)
     return iter
 end
 
-function AG:GetItemIdFromLink(link)
-    if not link then return end
-    return tonumber(select(3, strfind(link , "^|%x+|Hitem:(%-?%d+).*")))
-end
-
-function AG:SetTooltipText(button, text)
+function Utils:SetTooltipText(button, text)
     GameTooltip:SetOwner(button, 'ANCHOR_NONE')
-    GameTooltip:SetPoint(GetTipAnchor(button))
+    GameTooltip:SetPoint(self:GetTipAnchor(button))
     GameTooltip:ClearLines()
     GameTooltip:AddLine(text)
     GameTooltip:Show()
@@ -154,7 +127,7 @@ local realmWideCurrencyIDs = {
         [1297308] = true,   -- Bonzo Bolts
 }
 
-function AG:UpdateCurrencyDB()
+function Utils:UpdateCurrencyDB()
     if not self.realmDB or not self.charDB then return end
 
     self.charDB.currency = self.charDB.currency or {}
@@ -177,15 +150,15 @@ function AG:UpdateCurrencyDB()
     end
 end
 
-function AG:CURRENCY_DISPLAY_UPDATE()
-    AG:UpdateCurrencyDB()
+function Utils:CURRENCY_DISPLAY_UPDATE()
+    self:UpdateCurrencyDB()
 end
 
-function AG:MERCHANT_UPDATE()
-    AG:UpdateCurrencyDB()
+function Utils:MERCHANT_UPDATE()
+    self:UpdateCurrencyDB()
 end
 
-function AG:PLAYER_MONEY()
+function Utils:PLAYER_MONEY()
 
 end
 
@@ -197,7 +170,7 @@ local itemEquipLocConversion = {
     "INVTYPE_WEAPONMAINHAND","INVTYPE_WEAPONOFFHAND","INVTYPE_HOLDABLE","INVTYPE_AMMO",
     "INVTYPE_THROWN","INVTYPE_RANGEDRIGHT","INVTYPE_QUIVER","INVTYPE_RELIC",
 }
-function AG:GetItemInfo(item)
+function Utils:GetItemInfo(item)
 	item = tonumber(item) and Item:CreateFromID(item) or Item:CreateFromLink(item)
 	local itemName, itemLink, itemQuality, itemLevel, itemMinLevel, itemType, itemSubType, itemStackCount, itemEquipLoc, itemTexture, itemSellPrice = GetItemInfo(item.itemID)
 	if not item:GetInfo() then
@@ -213,3 +186,85 @@ function AG:GetItemInfo(item)
 	end
 	return itemName, itemLink, itemQuality, itemLevel, itemMinLevel, itemType, itemSubType, itemStackCount, itemEquipLoc, itemTexture, itemSellPrice
 end
+
+--------------------------------- DewDrop Dropdownmenu ---------------------------------
+-- Used to create a dewdrop menus from tables
+function Utils:OpenDewdropMenu(frame, menuList, ...)
+	if self.Dewdrop:IsOpen(frame) then self.Dewdrop:Close() return end
+	local textSize = AtlasLoot.selectedProfile.txtSize or 12
+	local menuTables = {...}
+	if #menuTables > 0 then
+		-- if more then 1 table is sent combine them into 1 table
+		for _, v in pairs(menuTables) do
+			for level, list in pairs(v) do
+				for _, entry in pairs(list) do
+					menuList[level] = menuList[level] or {}
+						table.insert(menuList[level], entry)
+				end
+			end
+		end
+	end
+
+	local function addDiviver(maxLenght)
+		local text = self.Colors.WHITE.."----------------------------------------------------------------------------------------------------"
+		self.Dewdrop:AddLine(
+			"text" , text:sub(1, maxLenght),
+			"textHeight", textSize,
+			"textWidth", textSize,
+			"isTitle", true,
+			"notCheckable", true
+		)
+	end
+	self.Dewdrop:Open(frame,
+		"point", function(parent)
+			local point1, _, point2 = self:GetTipAnchor(frame)
+    		return point1, point2
+		end,
+		"children", function(level, value)
+			local textLength = menuList.dividerLength or 35
+			for i, menu in pairs(menuList[level]) do
+				if menu.showOnCondition == nil or menu.showOnCondition == true then
+					if menu.show == nil or value == menu.show then
+						if menu.divider then
+							addDiviver(textLength)
+						end
+						local checked = menu.checked
+						if menu.checked and type(menu.checked) == "table" then
+							checked = menu.checked[1][menu.checked[2]]
+						end
+						local text = menu.isTitle and self.Colors.YELLOW..menu.text or menu.text
+						self.Dewdrop:AddLine(
+							"text", text,
+							"isTitle", menu.isTitle,
+							"value", menu.value,
+							"hasArrow", menu.hasArrow,
+							"closeWhenClicked", not menu.dontCloseWhenClicked,
+							"textHeight", menu.textHeight or textSize,
+							"textWidth", menu.textWidth or textSize,
+							"checked", checked,
+							"notCheckable", (checked == nil or not menu.isRadio),
+							"tooltip", menu.tooltip or menu.text,
+							"secure", menu.secure,
+							"icon", menu.icon,
+							"isRadio", menu.isRadio,
+							"func", menu.func
+						)
+					end
+				end
+				-- create close button
+				if i == #menuList[level] then
+					addDiviver(textLength)
+					self.Dewdrop:AddLine(
+						"text", self.Colors.CYAN..AL["Close Menu"],
+						"textHeight", textSize,
+						"textWidth", textSize,
+						"closeWhenClicked", true,
+						"notCheckable", true
+					)
+				end
+			end
+		end
+	)
+end
+
+-------------------------------------------------------------------------------
