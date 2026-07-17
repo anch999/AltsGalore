@@ -1,4 +1,4 @@
-local MAJOR, MINOR = "SettingsCreator-1.0", 11
+local MAJOR, MINOR = "SettingsCreator-1.0", 14
 local SettingsCreator, oldminor = LibStub:NewLibrary(MAJOR, MINOR)
 
 if not SettingsCreator then return end -- No Upgrade needed.
@@ -129,7 +129,7 @@ local function CreateCheckButton(options, db, frame, addonName, setPoint, opTabl
     GameTooltip:Hide()
     end)
     options[opTable.Name]:SetScript("OnShow", function() if opTable.OnShow then opTable.OnShow(options[opTable.Name]) end end)
-    options[opTable.Name]:SetChecked(db[opTable.Name] or false)
+    options[opTable.Name]:SetChecked((db and db[opTable.Name]) or false)
     checkBoxs[addonName] = checkBoxs[addonName] or {}
     tinsert(checkBoxs[addonName], {options[opTable.Name], opTable.Name})
     return options[opTable.Name]
@@ -184,6 +184,10 @@ local function CreateSlider(options, db, frame, addonName, setPoint, opTable)
     options[opTable.Name]:SetSize(unpack(opTable.Size))
     options[opTable.Name]:SetMinMaxValues(opTable.MinMax[1], opTable.MinMax[2])
     _G[options[opTable.Name]:GetName().."Text"]:SetText(opTable.Lable)
+    options[opTable.Name]:SetScript("OnEnter", function()
+        showTooltip(options[opTable.Name], opTable.Tooltip or opTable.Lable)
+        if opTable.OnEnter then opTable.OnEnter() end
+    end)
     _G[options[opTable.Name]:GetName().."Low"]:SetText(opTable.MinMax[1])
     _G[options[opTable.Name]:GetName().."High"]:SetText(opTable.MinMax[2])
     options[opTable.Name]:SetScript("OnValueChanged", function(slider)
@@ -258,6 +262,7 @@ local function CreateTab(options, tabNum, data, tab)
 end
 
 function SettingsCreator:CreateOptionsPages(data, db)
+    if not data and not db then return end
     if InterfaceOptionsFrame:GetWidth() < 850 then InterfaceOptionsFrame:SetWidth(850) end
 	local options = { frame = {} }
 		options.frame.panel = CreateFrame("FRAME", data.AddonName.."OptionsFrame", UIParent, nil)
@@ -324,7 +329,7 @@ function SettingsCreator:CreateOptionsPages(data, db)
                             if option.Position then
                                 setPoint = (option.Position == "Left") and {"RIGHT", lastFrame, "LEFT", -2, 0} or (option.Position == "Right") and {"LEFT", lastFrame, "RIGHT", 2, 0}
                             else
-                                point = point -50
+                                point = point -60
                                 setPoint = (coloum == "Left") and {"TOPLEFT", 35, point} or (coloum == "Right") and {"TOPLEFT", 355, point}
                                 lastFrame = CreateSlider(options, db, frame, data.AddonName, setPoint, option )
                             end
@@ -343,6 +348,11 @@ function SettingsCreator:CreateOptionsPages(data, db)
                 end
             end
         end
+
+    if data.About and LibStub:GetLibrary("LibAboutPanel", true) then
+        LibStub("LibAboutPanel").new(data.AddonName, data.AddonName)
+    end
+
     return options
 end
 
