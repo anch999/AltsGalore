@@ -96,12 +96,12 @@ local function lastBank(last)
 end
 function AG:GUILDBANKBAGSLOTS_CHANGED()
     local gBankType, containerType
-    
+    local isPersonalBank, isRealmBank = GetBankPermissions()
     -- Set what db to save data to
-    if self.IsPersonalBank then
+    if isPersonalBank then
         gBankType = "personalBanksDB"
         containerType = self.thisChar
-    elseif self.IsRealmBank then
+    elseif isRealmBank then
         gBankType = "realmBanksDB"
         containerType = "RealmBank"
     elseif self.guild then

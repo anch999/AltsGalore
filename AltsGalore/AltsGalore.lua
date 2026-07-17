@@ -66,16 +66,6 @@ end
 
 function AG:GUILDBANKFRAME_OPENED()
     wipe(self.numTabs)
-    if HasJsonCacheData("BANK_PERMISSIONS_PAYLOAD", 0) then
-        local json = GetJsonCacheData("BANK_PERMISSIONS_PAYLOAD", 0)
-        if json then
-            local jsonObject = C_Serialize:FromJSON(json)
-            if jsonObject then
-                AG.IsPersonalBank = jsonObject.IsPersonalBank
-                AG.IsRealmBank = jsonObject.IsRealmBank
-            end
-        end
-    end
     self:RegisterEvent("GUILDBANKBAGSLOTS_CHANGED")
 end
 
@@ -96,8 +86,8 @@ end
 
 --[[
 AG:SlashCommand(msg):
-msg - takes the argument for the /mysticextended command so that the appropriate action can be performed
-If someone types /mysticextended, bring up the options box
+msg - takes the argument for the /altsgalore command so that the appropriate action can be performed
+If someone types /altsgalore, bring up the options box
 ]]
 function AG:SlashCommand(msg)
     local cmd, arg = string.split(" ", msg, 2)
